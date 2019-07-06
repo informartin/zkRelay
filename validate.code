@@ -46,7 +46,7 @@ def unpackBits(field[32] bits) -> (field):
                 if pack128([...[0; 120], ...bits[0..8]]) == 29 then pack128([...[0; 24], ...bits[8..32], ...[0; 80]]) else \
                   if pack128([...[0; 120], ...bits[0..8]]) == 30 then pack128([...[0; 16], ...bits[8..32], ...[0; 88]]) else \
                     if pack128([...[0; 120], ...bits[0..8]]) == 31 then pack128([...[0; 8], ...bits[8..32], ...[0; 96]]) else \
-                    pack128([1; 128]) fi \
+                    pack128([0; 128]) fi \
                   fi \
                 fi \
               fi \
