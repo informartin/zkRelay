@@ -36,8 +36,24 @@ def toBigEndian(field[128] value) -> (field[128]):
             ...value[0..8]]
 
 def unpackBits(field[32] bits) -> (field):
-    field result =  if pack128([...[0; 120], ...bits[0..8]]) == 29 then pack128([...[0; 24], ...bits[8..32], ...[0; 80]]) else \
-        if pack128([...[0; 120], ...bits[0..8]]) == 23 then pack128([...[0; 72], ...bits[8..32], ...[0; 32]]) else pack128([1; 128]) fi \
+    field result = \
+    if pack128([...[0; 120], ...bits[0..8]]) == 23 then pack128([...[0; 72], ...bits[8..32], ...[0; 32]]) else \
+      if pack128([...[0; 120], ...bits[0..8]]) == 24 then pack128([...[0; 64], ...bits[8..32], ...[0; 40]]) else \
+        if pack128([...[0; 120], ...bits[0..8]]) == 25 then pack128([...[0; 56], ...bits[8..32], ...[0; 48]]) else \
+          if pack128([...[0; 120], ...bits[0..8]]) == 26 then pack128([...[0; 48], ...bits[8..32], ...[0; 56]]) else \
+            if pack128([...[0; 120], ...bits[0..8]]) == 27 then pack128([...[0; 40], ...bits[8..32], ...[0; 64]]) else \
+              if pack128([...[0; 120], ...bits[0..8]]) == 28 then pack128([...[0; 32], ...bits[8..32], ...[0; 72]]) else \
+                if pack128([...[0; 120], ...bits[0..8]]) == 29 then pack128([...[0; 24], ...bits[8..32], ...[0; 80]]) else \
+                  if pack128([...[0; 120], ...bits[0..8]]) == 30 then pack128([...[0; 16], ...bits[8..32], ...[0; 88]]) else \
+                    if pack128([...[0; 120], ...bits[0..8]]) == 31 then pack128([...[0; 8], ...bits[8..32], ...[0; 96]]) else \
+                    pack128([1; 128]) fi \
+                  fi \
+                fi \
+              fi \
+            fi \
+          fi \
+        fi \
+      fi \
     fi
     return result
 
