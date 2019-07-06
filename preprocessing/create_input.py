@@ -43,8 +43,9 @@ def createZokratesInputFromBlock(block):
 
     return hexToDecimalZokratesInput(header)
 
-first_block = 579379
-last_block = 579383
+first_block = 200000
+#last_block = 579383
+last_block = first_block + 4
 blocks = getBlocksInRange(first_block, last_block+1)
 
 print(getBlocksInRange(first_block-1,first_block)[0]["hash"])
@@ -55,4 +56,8 @@ intermediate_zokrates_blocks = [createZokratesInputFromBlock(block) for block in
 intermediate_zokrates_blocks = [item for sublist in intermediate_zokrates_blocks for item in sublist] #flatten
 final_zokrates_block = createZokratesInputFromBlock(blocks[4])
 
-print('zokrates input: ' + str([*prior_block_zokrates_input, *intermediate_zokrates_blocks, *final_zokrates_block]))
+print('zokrates input: ' +
+      str([*prior_block_zokrates_input, *intermediate_zokrates_blocks, *final_zokrates_block])
+      .replace(',','')
+      .replace('[','')
+      .replace(']',''))
