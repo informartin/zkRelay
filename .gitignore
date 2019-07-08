@@ -2,3 +2,6 @@ out
 out.code
 witness
 .idea
+*.key
+verifier.sol
+proof.json

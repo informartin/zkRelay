@@ -43,7 +43,7 @@ def createZokratesInputFromBlock(block):
 
     return hexToDecimalZokratesInput(header)
 
-first_block = 200000
+first_block = 6
 #last_block = 579383
 last_block = first_block + 4
 blocks = getBlocksInRange(first_block, last_block+1)
