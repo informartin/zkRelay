@@ -36,8 +36,9 @@ def createZokratesInputFromBlock(block):
     little_endian_merkleRoot = littleEndian(block['merkleroot'])
     little_endian_time = littleEndian(hex(block['time'])[2:])
     little_endian_difficultyBits = littleEndian(block['bits'])
-    little_endian_nonce = littleEndian(hex(block['nonce'])[2:])
-    little_endian_nonce = '0' + little_endian_nonce if len(little_endian_nonce) % 2 != 0 else little_endian_nonce
+    nonce = hex(block['nonce'])[2:]
+    nonce = '0' * (8 - len(nonce)) + nonce #ensure nonce is 4 bytes long
+    little_endian_nonce = littleEndian(nonce)
 
     header = version + little_endian_previousHash + little_endian_merkleRoot + little_endian_time + little_endian_difficultyBits + little_endian_nonce
 

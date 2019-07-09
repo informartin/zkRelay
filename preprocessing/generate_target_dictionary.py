@@ -1,4 +1,3 @@
-
 for i in range(23, 32):
     padding = (i-19)*8
     print('if pack128([...[0; 120], ...bits[0..8]]) == ' + str(i) +
