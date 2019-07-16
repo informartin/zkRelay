@@ -2,6 +2,7 @@ import "utils/pack/pack128.code" as pack128
 import "utils/pack/unpack128.code" as unpack128
 import "hashes/sha256/1024bit.code" as sha256for1024
 import "./sha256only.code" as sha256only
+import "./euclidian_division.code" as floor
 
 def toBigEndian(field[32] value) -> (field[32]):
     return [ \
@@ -35,7 +36,7 @@ def toBigEndian(field[128] value) -> (field[128]):
             ...value[8..16], \
             ...value[0..8]]
 
-def unpackBits(field[32] bits) -> (field):
+def packTarget(field[32] bits) -> (field):
     field result = \
     if pack128([...[0; 120], ...bits[0..8]]) == 23 then pack128([...[0; 72], ...bits[8..32], ...[0; 32]]) else \
       if pack128([...[0; 120], ...bits[0..8]]) == 24 then pack128([...[0; 64], ...bits[8..32], ...[0; 40]]) else \
@@ -56,6 +57,28 @@ def unpackBits(field[32] bits) -> (field):
       fi \
     fi
     return result
+
+// call with last field of block array
+def calculate_target(field epoch_head, field epoch_tail) -> (field):
+    epoch_head_unpacked = unpack128(epoch_head)
+    epoch_tail_unpacked = unpack128(epoch_tail)
+    time_head = pack128([...[0; 96], ...toBigEndian(epoch_head_unpacked[32..64])])
+    time_tail = pack128([...[0; 96], ...toBigEndian(epoch_tail_unpacked[32..64])])
+    /*
+    nonce_prefix_head = unpack128(epoch_head_unpacked[64..72])-128
+    nonce_prefix = unpack128(epoch_tail_unpacked[64..72])-128 // 128 is subtracted to fit in a single variable, check if this is viable!
+    nonce_base_head = unpack128(epoch_head_unpacked[72..96])
+    nonce_base = unpack128(epoch_tail_unpacked[72..96])
+    */
+
+    current_target = packTarget(toBigEndian(epoch_head_unpacked[64..96]))
+    field time_delta = time_tail - time_head
+    field target_time_delta = 1209600 // 2016 * 600 (time interval of 10 minutes)
+
+    //field target = current_target * time_delta // / target_time_delta
+    field target = floor(current_target * time_delta, target_time_delta)
+
+return target
 
 
 def validate_block_header(field[2] prev_block_hash, field[5] preimage) -> (field[3]):
@@ -81,22 +104,25 @@ def validate_block_header(field[2] prev_block_hash, field[5] preimage) -> (field
 
     res0 = pack128(r[0..128])
     res1 = pack128(r[128..256])
-/*
-    field[8] unpacked_target_bytes = e[88..96]
-    field target_bytes = pack128([...[0;120], ...unpacked_target_bytes])
 
-    field[24] bigEndian_difficulty_bits = toBigEndian(e[64..88])
-    field[128] unpacked_difficulty_bits = [...[0; 104], ...bigEndian_difficulty_bits]
-	field difficulty_bits = pack128(unpacked_difficulty_bits)
-*/
-    target = unpackBits(toBigEndian(e[64..96]))
+    target = packTarget(toBigEndian(e[64..96]))
 
     valid = if valid == 1 && target > pack128(toBigEndian(r[128..256])) then 1 else 0 fi
 
 return [valid, res0, res1]
 //return [valid, target, pack128(toBigEndian(r[128..256]))] //output for test purposes
 
-def main(field[2] prev_block_hash, private field[20] intermediate_blocks, field[5] final_block) -> (field[3]):
+def main(field[5] prev_block, field[5] current_block, field[5] next_block) -> (field[3]):
+    calculated_target = calculate_target(prev_block[4], current_block[4])
+    unpacked_field = unpack128(next_block[4])
+    field target_time_delta = 1209600 // 2016 * 600 (time interval of 10 minutes)
+    field encoded_target = packTarget(toBigEndian(unpacked_field[64..96]))
+    field encoded_target_extended = encoded_target * target_time_delta
+
+return [0, encoded_target_extended, calculated_target]
+
+/*
+def mainly_garbage(field[2] prev_block_hash, prev_target, private field[20] intermediate_blocks, field[5] final_block) -> (field[3]):
 
     field result = 1
 
@@ -116,3 +142,4 @@ def main(field[2] prev_block_hash, private field[20] intermediate_blocks, field[
     result = if block5[0] == 0 || result == 0 then 0 else 1 fi
 
 return [result, ...block5[1..3]]
+*/
