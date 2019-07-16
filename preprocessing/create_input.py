@@ -44,21 +44,39 @@ def createZokratesInputFromBlock(block):
 
     return hexToDecimalZokratesInput(header)
 
-first_block = 6
-#last_block = 579383
-last_block = first_block + 4
-blocks = getBlocksInRange(first_block, last_block+1)
 
-print(getBlocksInRange(first_block-1,first_block)[0]["hash"])
+def generateZokratesInputFromBlock(first_block, amount):
+    first_block = first_block
+    last_block = first_block + amount - 1
+    blocks = getBlocksInRange(first_block, last_block+1)
 
-prior_blockhash = GENESIS_BLOCK_HASH if first_block == 1 else getBlocksInRange(first_block-1,first_block)[0]["hash"]
-prior_block_zokrates_input = hexToDecimalZokratesInput(littleEndian(prior_blockhash))
-intermediate_zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:4]]
-intermediate_zokrates_blocks = [item for sublist in intermediate_zokrates_blocks for item in sublist] #flatten
-final_zokrates_block = createZokratesInputFromBlock(blocks[4])
+    prior_blockhash = GENESIS_BLOCK_HASH if first_block == 1 else getBlocksInRange(first_block-1,first_block)[0]["hash"]
+    prior_block_zokrates_input = hexToDecimalZokratesInput(littleEndian(prior_blockhash))
+    intermediate_zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:amount - 1]]
+    intermediate_zokrates_blocks = [item for sublist in intermediate_zokrates_blocks for item in sublist] #flatten
+    final_zokrates_block = createZokratesInputFromBlock(blocks[amount - 1])
 
-print('zokrates input: ' +
-      str([*prior_block_zokrates_input, *intermediate_zokrates_blocks, *final_zokrates_block])
-      .replace(',','')
-      .replace('[','')
-      .replace(']',''))
+    print('zokrates input: ' +
+          str([*prior_block_zokrates_input, *intermediate_zokrates_blocks, *final_zokrates_block])
+          .replace(',','')
+          .replace('[','')
+          .replace(']',''))
+
+
+def generateZokratesInputForBlocks(blocks):
+    blocks = [getBlocksInRange(i, i+1) for i in blocks]
+    blocks = [item for sublist in blocks for item in sublist] #flatten
+    print(blocks)
+    zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:len(blocks)]]
+    print('zokrates input: ' +
+          str(zokrates_blocks)
+          .replace(',','')
+          .replace('[','')
+          .replace(']',''))
+
+
+generateZokratesInputForBlocks([30240, 32255, 32256])
+
+#generateZokratesInputFromBlock(1, 5)
+
+#blocks = [getBlocksInRange(first_block-1,first_block), getBlocksInRange(last_block-1,last_block)]
