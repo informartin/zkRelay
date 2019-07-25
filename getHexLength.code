@@ -1,0 +1,46 @@
+import "utils/pack/unpack128.code" as unpack128
+
+def get_bit_length(field word) -> (field):
+    field[128] unpacked_word = unpack128(word)
+    field result = 0
+    for field i in 0..128 do
+        result = if (result == 0) && (unpacked_word[i] == 1) then 128-i else result fi
+    endfor
+return result
+
+def main(field word) -> (field):
+    field bit_length = get_bit_length(word)
+    field result = 0
+    result = if bit_length > 0 then 1 else result fi
+    result = if bit_length > 4 then 2 else result fi
+    result = if bit_length > 8 then 3 else result fi
+    result = if bit_length > 12 then 4 else result fi
+    result = if bit_length > 16 then 5 else result fi
+    result = if bit_length > 20 then 6 else result fi
+    result = if bit_length > 24 then 7 else result fi
+    result = if bit_length > 28 then 8 else result fi
+    result = if bit_length > 32 then 9 else result fi
+    result = if bit_length > 36 then 10 else result fi
+    result = if bit_length > 40 then 11 else result fi
+    result = if bit_length > 44 then 12 else result fi
+    result = if bit_length > 48 then 13 else result fi
+    result = if bit_length > 52 then 14 else result fi
+    result = if bit_length > 56 then 15 else result fi
+    result = if bit_length > 60 then 16 else result fi
+    result = if bit_length > 64 then 17 else result fi
+    result = if bit_length > 68 then 18 else result fi
+    result = if bit_length > 72 then 19 else result fi
+    result = if bit_length > 76 then 20 else result fi
+    result = if bit_length > 80 then 21 else result fi
+    result = if bit_length > 84 then 22 else result fi
+    result = if bit_length > 88 then 23 else result fi
+    result = if bit_length > 92 then 24 else result fi
+    result = if bit_length > 96 then 25 else result fi
+    result = if bit_length > 100 then 26 else result fi
+    result = if bit_length > 104 then 27 else result fi
+    result = if bit_length > 108 then 28 else result fi
+    result = if bit_length > 112 then 29 else result fi
+    result = if bit_length > 116 then 30 else result fi
+    result = if bit_length > 120 then 31 else result fi
+    result = if bit_length > 124 then 32 else result fi
+return result

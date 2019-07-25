@@ -32,7 +32,7 @@ def hexToDecimalZokratesInput(input):
 
 def createZokratesInputFromBlock(block):
     version = littleEndian(block['versionHex'])
-    little_endian_previousHash = littleEndian(block['previousblockhash'])
+    little_endian_previousHash = littleEndian(block['previousblockhash']) if block['height'] > 0 else 64 * '0'
     little_endian_merkleRoot = littleEndian(block['merkleroot'])
     little_endian_time = littleEndian(hex(block['time'])[2:])
     little_endian_difficultyBits = littleEndian(block['bits'])
@@ -45,7 +45,7 @@ def createZokratesInputFromBlock(block):
     return hexToDecimalZokratesInput(header)
 
 
-def generateZokratesInputFromBlock(first_block, amount):
+def generateZokratesInputFromBlockLegacy(first_block, amount):
     first_block = first_block
     last_block = first_block + amount - 1
     blocks = getBlocksInRange(first_block, last_block+1)
@@ -63,6 +63,24 @@ def generateZokratesInputFromBlock(first_block, amount):
           .replace(']',''))
 
 
+def generateZokratesInputFromBlock(first_block, amount):
+    first_block = first_block
+    last_block = first_block + amount - 1
+    blocks = getBlocksInRange(first_block, last_block+1)
+
+    #prior_blockhash = GENESIS_BLOCK_HASH if first_block == 1 else getBlocksInRange(first_block-1,first_block)[0]["hash"]
+    #prior_block_zokrates_input = hexToDecimalZokratesInput(littleEndian(prior_blockhash))
+    intermediate_zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:amount - 1]]
+    intermediate_zokrates_blocks = [item for sublist in intermediate_zokrates_blocks for item in sublist] #flatten
+    final_zokrates_block = createZokratesInputFromBlock(blocks[amount - 1])
+
+    print('zokrates input: ' +
+          str([*intermediate_zokrates_blocks, *final_zokrates_block])
+          .replace(',','')
+          .replace('[','')
+          .replace(']',''))
+
+
 def generateZokratesInputForBlocks(blocks):
     blocks = [getBlocksInRange(i, i+1) for i in blocks]
     blocks = [item for sublist in blocks for item in sublist] #flatten
@@ -75,8 +93,12 @@ def generateZokratesInputForBlocks(blocks):
           .replace(']',''))
 
 
-generateZokratesInputForBlocks([30240, 32255, 32256])
+#generateZokratesInputForBlocks([30240, 32255, 32256])
+#generateZokratesInputForBlocks([32256, 34271, 34272])
+#generateZokratesInputForBlocks([2016, 4031, 4032])
 
-#generateZokratesInputFromBlock(1, 5)
+generateZokratesInputFromBlock(0, 2017)
+
+#generateZokratesInputForBlocks([0])
 
 #blocks = [getBlocksInRange(first_block-1,first_block), getBlocksInRange(last_block-1,last_block)]
