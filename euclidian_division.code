@@ -6,11 +6,11 @@ def main(field d, field q) -> (field):
     field counter  = 1
     field multiple = q
     field terminate = 0
-    for field i in 0..65535 do
+    for field i in 0..8qqq do
         multiple = if terminate==1 then multiple else multiple + q fi
         field a = if multiple > d then 1 else 0 fi
         field b = if multiple < q then 1 else 0 fi
-        terminate = if xor(a, b) == 1 then 1 else 0 fi
+        terminate = xor(a, b)
         counter = if terminate==1 then counter else counter + 1 fi
     endfor
     counter = if q > d then 0 else \
