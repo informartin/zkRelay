@@ -67,7 +67,8 @@ def generateZokratesInputFromBlock(first_block, amount):
 
     #prior_blockhash = GENESIS_BLOCK_HASH if first_block == 1 else getBlocksInRange(first_block-1,first_block)[0]["hash"]
     #prior_block_zokrates_input = hexToDecimalZokratesInput(littleEndian(prior_blockhash))
-    epoch_header_block_number = first_block - (amount-1)*(2016/amount)
+    epoch_header_block_number = first_block if (first_block+1) % 2016 == 0 else first_block - (first_block % 2016) - 1
+    print(epoch_header_block_number)
     epoch_head = getBlocksInRange(epoch_header_block_number, epoch_header_block_number+1) \
         if first_block >= 2016 else getBlocksInRange(0, 1)
     epoch_head = createZokratesInputFromBlock(epoch_head[0])
@@ -96,7 +97,7 @@ def generateZokratesInputForBlocks(blocks):
 #generateZokratesInputForBlocks([32256, 34271, 34272])
 #generateZokratesInputForBlocks([2016, 4031, 4032])
 
-generateZokratesInputFromBlock(0, 505)
+generateZokratesInputFromBlock(32255, 505)
 
 
 #generateZokratesInputForBlocks([0])
