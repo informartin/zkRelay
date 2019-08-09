@@ -95,8 +95,8 @@ def generateZokratesInputForBlocks(blocks):
 #generateZokratesInputForBlocks([32256, 34271, 34272])
 #generateZokratesInputForBlocks([2016, 4031, 4032])
 
-#generateZokratesInputFromBlock(0, 505)
-generateZokratesInputFromBlock(0, 2017)
+generateZokratesInputFromBlock(0, 505)
+
 
 #generateZokratesInputForBlocks([0])
 
