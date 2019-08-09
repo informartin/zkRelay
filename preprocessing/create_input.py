@@ -46,7 +46,6 @@ def createZokratesInputFromBlock(block):
 
 
 def generateZokratesInputFromBlockLegacy(first_block, amount):
-    first_block = first_block
     last_block = first_block + amount - 1
     blocks = getBlocksInRange(first_block, last_block+1)
 
@@ -64,7 +63,6 @@ def generateZokratesInputFromBlockLegacy(first_block, amount):
 
 
 def generateZokratesInputFromBlock(first_block, amount):
-    first_block = first_block
     last_block = first_block + amount - 1
     blocks = getBlocksInRange(first_block, last_block+1)
 
@@ -97,6 +95,7 @@ def generateZokratesInputForBlocks(blocks):
 #generateZokratesInputForBlocks([32256, 34271, 34272])
 #generateZokratesInputForBlocks([2016, 4031, 4032])
 
+#generateZokratesInputFromBlock(0, 505)
 generateZokratesInputFromBlock(0, 2017)
 
 #generateZokratesInputForBlocks([0])
