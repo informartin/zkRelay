@@ -84,7 +84,6 @@ def generateZokratesInputFromBlock(first_block, amount):
 def generateZokratesInputForBlocks(blocks):
     blocks = [getBlocksInRange(i, i+1) for i in blocks]
     blocks = [item for sublist in blocks for item in sublist] #flatten
-    print(blocks)
     zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:len(blocks)]]
     print(str(zokrates_blocks)
           .replace(',','')
@@ -93,5 +92,7 @@ def generateZokratesInputForBlocks(blocks):
 
 
 generateZokratesInputFromBlock(33768, 505)
+#generateZokratesInputFromBlock(1512, 505)
 
+#generateZokratesInputFromBlock(32760, 505)
 #blocks = [getBlocksInRange(first_block-1,first_block), getBlocksInRange(last_block-1,last_block)]
