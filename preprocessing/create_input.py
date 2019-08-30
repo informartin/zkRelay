@@ -62,8 +62,8 @@ def generateZokratesInputFromBlockLegacy(first_block, amount):
 
 
 def generateZokratesInputFromBlock(first_block, amount):
-    last_block = first_block + amount - 1
-    blocks = getBlocksInRange(first_block, last_block+1)
+    last_block = first_block + amount
+    blocks = getBlocksInRange(first_block, last_block)
 
     #prior_blockhash = GENESIS_BLOCK_HASH if first_block == 1 else getBlocksInRange(first_block-1,first_block)[0]["hash"]
     #prior_block_zokrates_input = hexToDecimalZokratesInput(littleEndian(prior_blockhash))
@@ -71,11 +71,12 @@ def generateZokratesInputFromBlock(first_block, amount):
     epoch_head = getBlocksInRange(epoch_header_block_number, epoch_header_block_number+1) \
         if first_block >= 2016 else getBlocksInRange(0, 1)
     epoch_head = createZokratesInputFromBlock(epoch_head[0])
-    prev_block_hash = hexToDecimalZokratesInput(littleEndian(blocks[0]["hash"]))
-    intermediate_zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[1:amount - 1]]
+    #list(map(lambda x: print(x['height']), blocks[0:len(blocks)-1]))
+    #print(blocks[len(blocks)-1]['height'])
+    prev_block_hash = hexToDecimalZokratesInput(littleEndian(getBlocksInRange(first_block-1,first_block)[0]["hash"]))
+    intermediate_zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:len(blocks)-1]]
     intermediate_zokrates_blocks = [item for sublist in intermediate_zokrates_blocks for item in sublist] #flatten
-    final_zokrates_block = createZokratesInputFromBlock(blocks[amount - 1])
-
+    final_zokrates_block = createZokratesInputFromBlock(blocks[len(blocks)-1])
     print(str([*epoch_head, *prev_block_hash, *intermediate_zokrates_blocks, *final_zokrates_block])
           .replace(',','')
           .replace('[','')
@@ -92,8 +93,8 @@ def generateZokratesInputForBlocks(blocks):
           .replace(']',''))
 
 
-generateZokratesInputFromBlock(33768, 505)
+#generateZokratesInputFromBlock(33769, 504)
 #generateZokratesInputFromBlock(1512, 505)
-
+generateZokratesInputFromBlock(1,504)
 #generateZokratesInputFromBlock(32760, 505)
 #blocks = [getBlocksInRange(first_block-1,first_block), getBlocksInRange(last_block-1,last_block)]
