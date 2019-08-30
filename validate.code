@@ -135,10 +135,10 @@ def validate_target(field epoch_head, field epoch_tail, field next_epoch_head) -
     // int('ffff' + 10 * '00', 16) * 2016 * 600 = 95832923060582736897701037735936000
     target = if target > 95832923060582736897701037735936000 then 95832923060582736897701037735936000 else target fi
     field delta = target - encoded_target_extended
-    delta = if target >= encoded_target_extended then delta else maxVariance fi
+    delta = if target >= encoded_target_extended then delta else maxVariance + 1 fi
     field valid = if delta <= maxVariance then 1 else 0 fi
     //field valid = if (37202390668975264121251936602161152-81015268229227203625641762304819200) < 1267650600228229401496703205375 then 1 else 0 fi
-return valid 
+return valid
 
 def hash_block_header(field[5] preimage) -> (field[2]):
     a = unpack128(preimage[0])
@@ -197,11 +197,11 @@ return [valid, res0, res1]
 //return [valid, target, pack128(toBigEndian(r[128..256]))] //output for test purposes
 
 
-def main(field[5] first_block_epoch, field[5] prev_block, private field[2515] intermediate_blocks, field[5] final_block) -> (field[4]):
+def main(field[5] first_block_epoch, field[2] prev_block_hash, private field[2515] intermediate_blocks, field[5] final_block) -> (field[4]):
     unpacked_raw_target = unpack128(first_block_epoch[4])
     field reference_target = pack128([...[0; 96], ...unpacked_raw_target[64..96]])
     field result = 1
-    block1 = validate_block_header(reference_target, hash_block_header(prev_block), intermediate_blocks[0..5])
+    block1 = validate_block_header(reference_target, prev_block_hash, intermediate_blocks[0..5])
     result = if block1[0] == 0 || result == 0 then 0 else 1 fi
     block2 = validate_block_header(reference_target, block1[1..3], intermediate_blocks[5..10])
     result = if block2[0] == 0 || result == 0 then 0 else 1 fi
@@ -1214,7 +1214,5 @@ def main(field[5] first_block_epoch, field[5] prev_block, private field[2515] in
     block504 = validate_block_header(pack128([...[0; 96], ...e[64..96]]), block503[1..3], final_block)
     result = if block504[0] == 0 || result == 0 then 0 else 1 fi
 
-    //result = validate_target(prev_block[4], current_block[4], next_block[4])
-    //TODO: optimize: it's not really necessary to pass the entire block for extracting the first epoch block's time
     target_is_valid = validate_target(first_block_epoch[4], intermediate_blocks[2514], final_block[4])
 return [result, target_is_valid, ...block504[1..3]]
