@@ -6,3 +6,5 @@ witness
 *.key
 verifier.sol
 proof.json
+output
+.swp
