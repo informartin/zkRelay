@@ -77,24 +77,23 @@ def generateZokratesInputFromBlock(first_block, amount):
     intermediate_zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:len(blocks)-1]]
     intermediate_zokrates_blocks = [item for sublist in intermediate_zokrates_blocks for item in sublist] #flatten
     final_zokrates_block = createZokratesInputFromBlock(blocks[len(blocks)-1])
-    print(str([*epoch_head, *prev_block_hash, *intermediate_zokrates_blocks, *final_zokrates_block])
-          .replace(',','')
-          .replace('[','')
-          .replace(']',''))
+    return str([*epoch_head, *prev_block_hash, *intermediate_zokrates_blocks, *final_zokrates_block]).replace(',','').replace('[','').replace(']','')
 
 
 def generateZokratesInputForBlocks(blocks):
     blocks = [getBlocksInRange(i, i+1) for i in blocks]
     blocks = [item for sublist in blocks for item in sublist] #flatten
     zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:len(blocks)]]
-    print(str(zokrates_blocks)
-          .replace(',','')
-          .replace('[','')
-          .replace(']',''))
+    print(str(zokrates_blocks).replace(',','').replace('[','').replace(']',''))
 
 
-#generateZokratesInputFromBlock(33769, 504)
+#generateZokratesInputFromBlock(33769+504, 504)
 #generateZokratesInputFromBlock(1512, 505)
-generateZokratesInputFromBlock(1,504)
+
+#generateZokratesInputFromBlock(1,504)
+#generateZokratesInputFromBlock(505,504)
+#generateZokratesInputFromBlock(1009,504)
+#generateZokratesInputFromBlock(1513+504,504)
+
 #generateZokratesInputFromBlock(32760, 505)
 #blocks = [getBlocksInRange(first_block-1,first_block), getBlocksInRange(last_block-1,last_block)]
