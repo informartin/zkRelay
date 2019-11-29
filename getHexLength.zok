@@ -1,4 +1,4 @@
-import "utils/pack/unpack128.code" as unpack128
+import "utils/pack/unpack128.zok" as unpack128
 
 def get_bit_length(field word) -> (field):
     field[128] unpacked_word = unpack128(word)

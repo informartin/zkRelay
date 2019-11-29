@@ -1,4 +1,4 @@
-import "hashes/sha256/512bit.code" as sha256
+import "hashes/sha256/512bit.zok" as sha256
 
 def main(field[256] input) -> (field[256]):
 
