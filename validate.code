@@ -113,7 +113,7 @@ def get_hex_length_bits(field[24] bits) -> (field):
 return result
 
 // call with last field of block array
-def validate_target(field epoch_head, field epoch_tail, field next_epoch_head) -> (field):
+def validate_target(field epoch_head, field epoch_tail, field next_epoch_head) -> (field[2]):
     epoch_head_unpacked = unpack128(epoch_head)
     epoch_tail_unpacked = unpack128(epoch_tail)
     next_epoch_head_unpacked = unpack128(next_epoch_head)
@@ -138,7 +138,7 @@ def validate_target(field epoch_head, field epoch_tail, field next_epoch_head) -
     delta = if target >= encoded_target_extended then delta else maxVariance + 1 fi
     field valid = if delta <= maxVariance then 1 else 0 fi
     //field valid = if (37202390668975264121251936602161152-81015268229227203625641762304819200) < 1267650600228229401496703205375 then 1 else 0 fi
-return valid
+return [valid, currentTarget]
 
 def hash_block_header(field[5] preimage) -> (field[2]):
     a = unpack128(preimage[0])
@@ -174,6 +174,7 @@ def validate_block_header(field reference_target, field[2] prev_block_hash, fiel
     field valid = if encoded_prev_block_hash1 == prev_block_hash[0] && encoded_prev_block_hash2 == prev_block_hash[1] \
         then 1 else 0 fi
 
+    // converting to big endian is not necessary here, as reference target is encoded little endian
     field current_target = pack128([...[0; 96], ...e[64..96]])
     valid = if valid == 1 && current_target == reference_target then 1 else 0 fi
 
@@ -197,8 +198,10 @@ return [valid, res0, res1]
 //return [valid, target, pack128(toBigEndian(r[128..256]))] //output for test purposes
 
 
-def main(field[5] first_block_epoch, field[2] prev_block_hash, private field[2515] intermediate_blocks, field[5] final_block) -> (field[4]):
+def main(field[5] first_block_epoch, field[2] prev_block_hash, private field[2515] intermediate_blocks, field[5] final_block) -> (field[5]):
     unpacked_raw_target = unpack128(first_block_epoch[4])
+    // converting to big endian is not necessary here, as it is compared to a little endian encoding
+    // it is not used for calculations
     field reference_target = pack128([...[0; 96], ...unpacked_raw_target[64..96]])
     field result = 1
     block1 = validate_block_header(reference_target, prev_block_hash, intermediate_blocks[0..5])
@@ -1215,4 +1218,4 @@ def main(field[5] first_block_epoch, field[2] prev_block_hash, private field[251
     result = if block504[0] == 0 || result == 0 then 0 else 1 fi
 
     target_is_valid = validate_target(first_block_epoch[4], intermediate_blocks[2514], final_block[4])
-return [result, target_is_valid, ...block504[1..3]]
+return [result, target_is_valid[0], ...block504[1..3], target_is_valid[1]]
