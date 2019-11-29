@@ -1,8 +1,8 @@
-import "utils/pack/pack128.code" as pack128
-import "utils/pack/unpack128.code" as unpack128
-import "hashes/sha256/1024bit.code" as sha256for1024
-import "./sha256only.code" as sha256only
-import "./getHexLength.code" as getHexLength
+import "utils/pack/pack128.zok" as pack128
+import "utils/pack/unpack128.zok" as unpack128
+import "hashes/sha256/1024bit.zok" as sha256for1024
+import "./sha256only.zok" as sha256only
+import "./getHexLength.zok" as getHexLength
 
 def toBigEndian(field[32] value) -> (field[32]):
     return [ \
@@ -138,7 +138,7 @@ def validate_target(field epoch_head, field epoch_tail, field next_epoch_head) -
     delta = if target >= encoded_target_extended then delta else maxVariance + 1 fi
     field valid = if delta <= maxVariance then 1 else 0 fi
     //field valid = if (37202390668975264121251936602161152-81015268229227203625641762304819200) < 1267650600228229401496703205375 then 1 else 0 fi
-return [valid, currentTarget]
+return [valid, current_target]
 
 def hash_block_header(field[5] preimage) -> (field[2]):
     a = unpack128(preimage[0])
