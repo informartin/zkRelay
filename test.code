@@ -1,0 +1,86 @@
+import "utils/pack/pack128.code" as pack128
+import "utils/pack/unpack128.code" as unpack128
+import "hashes/sha256/1024bit.code" as sha256for1024
+import "./sha256only.code" as sha256only
+//import "./euclidian_division.code" as floor
+
+def toBigEndian(field[32] value) -> (field[32]):
+    return [ \
+            ...value[24..32], \
+            ...value[16..24], \
+            ...value[8..16], \
+            ...value[0..8]]
+
+def toBigEndian(field[24] value) -> (field[24]):
+    return [ \
+            ...value[16..24], \
+            ...value[8..16], \
+            ...value[0..8]]
+
+def toBigEndian(field[128] value) -> (field[128]):
+    return [ \
+            ...value[120..128], \
+            ...value[112..120], \
+            ...value[104..112], \
+            ...value[96..104], \
+            ...value[88..96], \
+            ...value[80..88], \
+            ...value[72..80], \
+            ...value[64..72], \
+            ...value[56..64], \
+            ...value[48..56], \
+            ...value[40..48], \
+            ...value[32..40], \
+            ...value[24..32], \
+            ...value[16..24], \
+            ...value[8..16], \
+            ...value[0..8]]
+
+def packTarget(field[32] bits) -> (field):
+    field result = \
+    if pack128([...[0; 120], ...bits[0..8]]) == 23 then pack128([...[0; 72], ...bits[8..32], ...[0; 32]]) else \
+      if pack128([...[0; 120], ...bits[0..8]]) == 24 then pack128([...[0; 64], ...bits[8..32], ...[0; 40]]) else \
+        if pack128([...[0; 120], ...bits[0..8]]) == 25 then pack128([...[0; 56], ...bits[8..32], ...[0; 48]]) else \
+          if pack128([...[0; 120], ...bits[0..8]]) == 26 then pack128([...[0; 48], ...bits[8..32], ...[0; 56]]) else \
+            if pack128([...[0; 120], ...bits[0..8]]) == 27 then pack128([...[0; 40], ...bits[8..32], ...[0; 64]]) else \
+              if pack128([...[0; 120], ...bits[0..8]]) == 28 then pack128([...[0; 32], ...bits[8..32], ...[0; 72]]) else \
+                if pack128([...[0; 120], ...bits[0..8]]) == 29 then pack128([...[0; 24], ...bits[8..32], ...[0; 80]]) else \
+                  if pack128([...[0; 120], ...bits[0..8]]) == 30 then pack128([...[0; 16], ...bits[8..32], ...[0; 88]]) else \
+                    if pack128([...[0; 120], ...bits[0..8]]) == 31 then pack128([...[0; 8], ...bits[8..32], ...[0; 96]]) else \
+                    pack128([0; 128]) fi \
+                  fi \
+                fi \
+              fi \
+            fi \
+          fi \
+        fi \
+      fi \
+    fi
+    return result
+
+
+// call with last field of block array
+def calculate_target(field epoch_head, field epoch_tail) -> (field[2]):
+    epoch_head_unpacked = unpack128(epoch_head)
+    epoch_tail_unpacked = unpack128(epoch_tail)
+    time_head = pack128([...[0; 96], ...toBigEndian(epoch_head_unpacked[32..64])])
+    time_tail = pack128([...[0; 96], ...toBigEndian(epoch_tail_unpacked[32..64])])
+    /*
+    nonce_prefix_head = unpack128(epoch_head_unpacked[64..72])-128
+    nonce_prefix = unpack128(epoch_tail_unpacked[64..72])-128 // 128 is subtracted to fit in a single variable, check if this is viable!
+    nonce_base_head = unpack128(epoch_head_unpacked[72..96])
+    nonce_base = unpack128(epoch_tail_unpacked[72..96])
+    */
+
+    current_target = packTarget(toBigEndian(epoch_head_unpacked[64..96]))
+    field time_delta = time_tail - time_head
+    field target_time_delta = 1209600 // 2016 * 600 (time interval of 10 minutes)
+
+    //field target = current_target * time_delta // / target_time_delta
+    //field target = floor(current_target * time_delta, target_time_delta)
+
+return [time_delta,current_target]
+
+def main(field[5] prev_block, field[5] current_block, field[5] next_block) -> (field[2]):
+    calculated_target = calculate_target(prev_block[4], current_block[4])
+    return calculated_target

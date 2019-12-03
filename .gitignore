@@ -1,3 +1,4 @@
+input
 out
 out.code
 witness
@@ -5,3 +6,5 @@ witness
 *.key
 verifier.sol
 proof.json
+output
+.swp
