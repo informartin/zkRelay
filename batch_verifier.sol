@@ -1,9 +1,8 @@
 pragma solidity ^0.5.0;
 
 import "./verifier.sol" as zkVerifier;
-pragma experimental ABIEncoderV2;
 
-contract batch_verifier {
+contract BatchVerifier {
 
     uint256 constant batchSize = 504;
     uint256 constant epochSize = 2016;
@@ -25,7 +24,15 @@ contract batch_verifier {
 
     constructor() public {
         // add Bitcoin genesis block (little endian)
-        hashChain[0] = 0x6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000;
+        hashChain.push(0x6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000);
+        blockHeader[0x6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000] = [
+        1329227995784915872903807060280344576,
+        0,
+        18457794364764902817207364670,
+        137526082704405043163852743835310340266,
+        99849781011907566316926179502243720060
+        ];
+        cumDifficultyAtBatch.push(0);
         verifier = new zkVerifier.Verifier();
     }
 
@@ -40,16 +47,18 @@ contract batch_verifier {
      * 16:      Target value
      **/
     function submitBatch(
-        zkVerifier.Verifier.Proof memory proof,
+        uint[2] memory a,
+        uint[2][2] memory b,
+        uint[2] memory c,
         uint[17] memory input
     ) public returns (bool r) {
-
-        if(!verifyBatchCorrectness(proof, input, hashChain, hashChain.length, 0))
+        if(!verifyBatchCorrectness(a, b, c, input, hashChain, hashChain.length, 0))
             return false;
 
         uint256 blockHash = from128To256(input[14], input[15]);
         hashChain.push(blockHash);
         blockHeader[blockHash] = [input[7], input[8], input[9], input[10], input[11]];
+
         cumDifficultyAtBatch.push(
             cumDifficultyAtBatch[cumDifficultyAtBatch.length-1] +
             difficultyFromTarget(input[16])
@@ -61,14 +70,16 @@ contract batch_verifier {
     }
 
     function verifyBatchCorrectness(
-        zkVerifier.Verifier.Proof memory proof,
+        uint[2] memory a,
+        uint[2][2] memory b,
+        uint[2] memory c,
         uint[17] memory input,
         uint256[] memory sourceChain,
         uint256 batchHeight,
         uint256 offset
-    ) private returns (bool r) {
+    ) private returns (bool) {
         // Verify the correctness of the zkSNARK computation
-        if(!verifier.verifyTx(proof, input))
+        if(!verifier.verifyTx(a,b, c, input))
             return false;
 
         // Verify the correctness of the submitted headers
@@ -96,7 +107,6 @@ contract batch_verifier {
             batchHeight -= sourceChain.length;
             index = batchesInEpoch * (((batchHeight - sourceChain.length) % batchesInEpoch) - (batchesInEpoch - (offset % batchesInEpoch)));
         }
-
         // Adjust index to previous block if batch number % batchesInEpoch = 0
         if(batchHeight % batchesInEpoch == 0)
             index = index - batchesInEpoch;
@@ -104,11 +114,14 @@ contract batch_verifier {
             if(input[i] != blockHeader[sourceChain[index]][i])
                 return false;
         }
+
         return true;
     }
 
     function createMainChainChallenge(
-        zkVerifier.Verifier.Proof memory proof,
+        uint[2] memory a,
+        uint[2][2] memory b,
+        uint[2] memory c,
         uint[17] memory input,
         uint batchHeight
     ) public returns (int256 challengeId) {
@@ -117,7 +130,7 @@ contract batch_verifier {
         if(hashChain[batchHeight - 1] != hashChain[prev_block_hash])
             return -1;
 
-        if(!verifyBatchCorrectness(proof, input, hashChain, batchHeight, 0))
+        if(!verifyBatchCorrectness(a, b, c, input, hashChain, batchHeight, 0))
             return -1;
 
         uint256 difficulty = difficultyFromTarget(input[16]);
@@ -137,13 +150,15 @@ contract batch_verifier {
     }
 
     function addBatchToChallenge(
-        zkVerifier.Verifier.Proof memory proof,
+        uint[2] memory a,
+        uint[2][2] memory b,
+        uint[2] memory c,
         uint[17] memory input,
         uint256 challengeId
-    ) public returns (bool r) {
+    ) public returns (bool) {
         uint256 batchHeight = challenges[challengeId].startingAtBatchHeight + challenges[challengeId]._hashChain.length;
 
-        if(!verifyBatchCorrectness(proof, input, challenges[challengeId]._hashChain,batchHeight, challenges[challengeId].startingAtBatchHeight))
+        if(!verifyBatchCorrectness(a, b, c, input, challenges[challengeId]._hashChain,batchHeight, challenges[challengeId].startingAtBatchHeight))
             return false;
 
         uint256 blockHash = from128To256(input[14], input[15]);
@@ -161,7 +176,7 @@ contract batch_verifier {
         return true;
     }
 
-    function settleChallenge(uint256 challengeId) public returns (bool r) {
+    function settleChallenge(uint256 challengeId) public returns (bool) {
         if(challenges[challengeId]._cumDifficultyAtBatch[challenges[challengeId]._cumDifficultyAtBatch.length - 1] <=
             cumDifficultyAtBatch[cumDifficultyAtBatch.length - 1])
             return false;
@@ -196,8 +211,16 @@ contract batch_verifier {
         return blockHeader[hash];
     }
 
-    function getBlockHeaderForBlockNumer(uint number) public view returns (uint256[5] memory) {
+    function getBlockHeaderForBlockNumber(uint number) public view returns (uint256[5] memory) {
         getBlockHeaderForHash(getBlockHashForBlockNumber(number));
+    }
+
+    function getBatchChainLength() public view returns (uint256) {
+        return hashChain.length;
+    }
+
+    function getDifficultyAtBatch(uint256 number) public view returns (uint256) {
+        return cumDifficultyAtBatch[number];
     }
 
     event AddedNewBatchOfHeight(uint256);
