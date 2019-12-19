@@ -3,7 +3,7 @@
 BTZ Relay facilitates a chain-relay from Bitcoin to Ethereum through zkSNARKS.
 
 The implementation is based on [ZoKrates](https://github.com/Zokrates/ZoKrates) and performs off-chain Bitcoin header chain validations, while only the resulting prrof is submitted to the target ledger.
-The main branch of this repository includes an implementation that performs batch validations for 504 Bitcoin blocks.
+The main branch of this repository includes an implementation that performs batch validations for 63 Bitcoin blocks.
 
 The workflow of BTZ Relay is seperated into two steps, a one-time compilation and setup step and many-time validation.
 
@@ -29,7 +29,7 @@ As a prerequisite, ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be i
 
 - As a prerequisite, a the current implementation presumes a local Bitcoin client at `127.0.0.1:8332`, the credentials have to be store in `preprocessing/pw`
 
-- To validate a batch of 504, run the following script, where `n` corresponds to the block number of the first block in the batch: 
+- To validate a batch of 63, run the following script, where `n` corresponds to the block number of the first block in the batch: 
 
   `python preprocessing/batch.py n`
   
