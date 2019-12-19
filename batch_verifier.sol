@@ -38,30 +38,30 @@ contract BatchVerifier {
 
     /**
      * Assignmet of Input array variables:
-     * 0 - 4:   First block of the given epoch
-     * 5 - 6:   Hash of the block stored in the previous batch
-     * 7 - 11:  Last block of the given batch
-     * 12:      Resuålt (boolean value indicating if the batch is valid)
-     * 13:      Target validity (boolean value indicating if the encoded target equals the computed target)
-     * 14 - 15: Block hash of the last block in the given batch
-     * 16:      Target value
+     * 0:       First block of the given epoch
+     * 1 - 2:   Hash of the block stored in the previous batch
+     * 3 - 7:   Last block of the given batch
+     * 8:       Result (boolean value indicating if the batch is valid)
+     * 9:       Target validity (boolean value indicating if the encoded target equals the computed target)
+     * 10 - 11: Block hash of the last block in the given batch
+     * 12:      Target value
      **/
     function submitBatch(
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[17] memory input
+        uint[13] memory input
     ) public returns (bool r) {
         if(!verifyBatchCorrectness(a, b, c, input, hashChain, hashChain.length, 0))
             return false;
 
-        uint256 blockHash = from128To256(input[14], input[15]);
+        uint256 blockHash = from128To256(input[10], input[11]);
         hashChain.push(blockHash);
-        blockHeader[blockHash] = [input[7], input[8], input[9], input[10], input[11]];
+        blockHeader[blockHash] = [input[3], input[4], input[5], input[6], input[7]];
 
         cumDifficultyAtBatch.push(
             cumDifficultyAtBatch[cumDifficultyAtBatch.length-1] +
-            difficultyFromTarget(input[16])
+            difficultyFromTarget(input[12])
         );
 
         emit AddedNewBatchOfHeight((hashChain.length - 1) * batchSize);
@@ -73,7 +73,7 @@ contract BatchVerifier {
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[17] memory input,
+        uint[13] memory input,
         uint256[] memory sourceChain,
         uint256 batchHeight,
         uint256 offset
@@ -83,17 +83,17 @@ contract BatchVerifier {
             return false;
 
         // Verify the correctness of the submitted headers
-        if(input[12] != 1)
+        if(input[8] != 1)
             return false;
 
         // Verify reference to previous block
-        uint prev_block_hash = from128To256(input[5], input[6]);
+        uint prev_block_hash = from128To256(input[1], input[2]);
         if(prev_block_hash != sourceChain[batchHeight - offset - 1])
             return false;
 
         // Every fourth batch submission, a new epoch begin
         // Verify if the target has been calculated correctly
-        if(((batchHeight % batchesInEpoch) == 0) && (input[13] != 1))
+        if(((batchHeight % batchesInEpoch) == 0) && (input[9] != 1))
             return false;
 
         // Verify that the correct first block of an epoch was given
@@ -110,10 +110,10 @@ contract BatchVerifier {
         // Adjust index to previous block if batch number % batchesInEpoch = 0
         if(batchHeight % batchesInEpoch == 0)
             index = index - batchesInEpoch;
-        for(uint i = 0; i <= batchesInEpoch; i++) {
-            if(input[i] != blockHeader[sourceChain[index]][i])
-                return false;
-        }
+        // To save gas costs, only the relevant fifth field element of the epoch head is passed as parameter
+        if(input[0] != blockHeader[sourceChain[index]][4])
+            return false;
+
 
         return true;
     }
@@ -122,19 +122,19 @@ contract BatchVerifier {
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[17] memory input,
+        uint[13] memory input,
         uint batchHeight
     ) public returns (int256 challengeId) {
         // Verify batchHeight is correct
-        uint prev_block_hash = from128To256(input[5], input[6]);
+        uint prev_block_hash = from128To256(input[1], input[2]);
         if(hashChain[batchHeight - 1] != hashChain[prev_block_hash])
             return -1;
 
         if(!verifyBatchCorrectness(a, b, c, input, hashChain, batchHeight, 0))
             return -1;
 
-        uint256 difficulty = difficultyFromTarget(input[16]);
-        uint256 blockHash = from128To256(input[14], input[15]);
+        uint256 difficulty = difficultyFromTarget(input[12]);
+        uint256 blockHash = from128To256(input[10], input[11]);
 
         Challenge memory challenge = Challenge({
             startingAtBatchHeight: batchHeight,
@@ -144,7 +144,7 @@ contract BatchVerifier {
 
         challenges.push(challenge);
         challengeId = int(challenges.length - 1);
-        blockHeader[blockHash] = [input[7], input[8], input[9], input[10], input[11]];
+        blockHeader[blockHash] = [input[3], input[4], input[5], input[6], input[7]];
 
         emit AddedNewChallenge(challengeId);
     }
@@ -153,7 +153,7 @@ contract BatchVerifier {
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[17] memory input,
+        uint[13] memory input,
         uint256 challengeId
     ) public returns (bool) {
         uint256 batchHeight = challenges[challengeId].startingAtBatchHeight + challenges[challengeId]._hashChain.length;
@@ -161,15 +161,13 @@ contract BatchVerifier {
         if(!verifyBatchCorrectness(a, b, c, input, challenges[challengeId]._hashChain,batchHeight, challenges[challengeId].startingAtBatchHeight))
             return false;
 
-        uint256 blockHash = from128To256(input[14], input[15]);
+        uint256 blockHash = from128To256(input[10], input[11]);
         challenges[challengeId]._hashChain.push(blockHash);
-        blockHeader[blockHash] = [input[7], input[8], input[9], input[10], input[11]];
+        blockHeader[blockHash] = [input[3], input[4], input[5], input[6], input[7]];
         challenges[challengeId]._cumDifficultyAtBatch.push(
             challenges[challengeId]._cumDifficultyAtBatch[challenges[challengeId]._cumDifficultyAtBatch.length-1] +
-            difficultyFromTarget(input[16])
+            difficultyFromTarget(input[12])
         );
-
-        blockHeader[blockHash] = [input[7], input[8], input[9], input[10], input[11]];
 
         emit AddedNewBatchToChallenge(challengeId, challenges[challengeId]._hashChain.length);
 
@@ -221,6 +219,10 @@ contract BatchVerifier {
 
     function getDifficultyAtBatch(uint256 number) public view returns (uint256) {
         return cumDifficultyAtBatch[number];
+    }
+
+    function getSnarkVerifier() public view returns (address) {
+        return address(verifier);
     }
 
     event AddedNewBatchOfHeight(uint256);

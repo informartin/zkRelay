@@ -198,8 +198,8 @@ return [valid, res0, res1]
 //return [valid, target, pack128(toBigEndian(r[128..256]))] //output for test purposes
 
 
-def main(field[5] first_block_epoch, field[2] prev_block_hash, private field[2515] intermediate_blocks, field[5] final_block) -> (field[5]):
-    unpacked_raw_target = unpack128(first_block_epoch[4])
+def main(field first_block_epoch, field[2] prev_block_hash, private field[2515] intermediate_blocks, field[5] final_block) -> (field[5]):
+    unpacked_raw_target = unpack128(first_block_epoch)
     // converting to big endian is not necessary here, as it is compared to a little endian encoding
     // it is not used for calculations
     field reference_target = pack128([...[0; 96], ...unpacked_raw_target[64..96]])
@@ -1217,5 +1217,5 @@ def main(field[5] first_block_epoch, field[2] prev_block_hash, private field[251
     block504 = validate_block_header(pack128([...[0; 96], ...e[64..96]]), block503[1..3], final_block)
     result = if block504[0] == 0 || result == 0 then 0 else 1 fi
 
-    target_is_valid = validate_target(first_block_epoch[4], intermediate_blocks[2514], final_block[4])
+    target_is_valid = validate_target(first_block_epoch, intermediate_blocks[2514], final_block[4])
 return [result, target_is_valid[0], ...block504[1..3], target_is_valid[1]]
