@@ -221,6 +221,10 @@ contract BatchVerifier {
         return cumDifficultyAtBatch[number];
     }
 
+    function getSnarkVerifier() public view returns (address) {
+        return address(verifier);
+    }
+
     event AddedNewBatchOfHeight(uint256);
     event AddedNewChallenge(int256);
     event AddedNewBatchToChallenge(uint256, uint256);
