@@ -8,10 +8,6 @@ cmd_generate_proof = 'zokrates generate-proof'
 
 
 for i in range(20,21):
-    #file = open('input','w+')
-    #file.write(generateZokratesInputFromBlock((i-1)*504+1, 504))
-    #file.close()
-    #os.system(cmd_compute_witness)
     os.system(cmd_compute_witness + generateZokratesInputFromBlock((i-1)*504+1, 504))
     os.system(cmd_generate_proof)
     os.system('mv witness output/witness' + str(i))
