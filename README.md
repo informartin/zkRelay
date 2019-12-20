@@ -7,7 +7,7 @@ The main branch of this repository includes an implementation that performs batc
 
 The workflow of BTZ Relay is seperated into two steps, a one-time compilation and setup step and many-time validation.
 
-As a prerequisite, ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed for both steps.
+As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed for both steps.
 
 ## Compilation and Setup
 
