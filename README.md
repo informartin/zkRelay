@@ -27,7 +27,7 @@ As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be 
 
 ## Off-chain validation
 
-- As a prerequisite, a the current implementation presumes a local Bitcoin client at `127.0.0.1:8332`, the credentials have to be store in `preprocessing/pw`
+- As a prerequisite, a the current implementation presumes a local Bitcoin client at `127.0.0.1:8332`, the credentials have to be stored in `preprocessing/pw`. The script requires Python3.
 
 - To validate a batch of 504, run the following script, where `n` corresponds to the block number of the first block in the batch: 
 
