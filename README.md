@@ -1,11 +1,11 @@
-# BTZ Relay
+# zkRelay
 
-BTZ Relay facilitates a chain-relay from Bitcoin to Ethereum through zkSNARKS.
+zkRelay facilitates a chain-relay from Bitcoin to Ethereum through zkSNARKS.
 
 The implementation is based on [ZoKrates](https://github.com/Zokrates/ZoKrates) and performs off-chain Bitcoin header chain validations, while only the resulting prrof is submitted to the target ledger.
 The main branch of this repository includes an implementation that performs batch validations for 504 Bitcoin blocks.
 
-The workflow of BTZ Relay is seperated into two steps, a one-time compilation and setup step and many-time validation.
+The workflow of zkRelay is seperated into two steps, a one-time compilation and setup step and many-time validation.
 
 As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed for both steps.
 
@@ -23,7 +23,7 @@ As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be 
 
   `zokrates export-verifier`
   
-- Last, the BTZ Relay contract `batch_verifier.sol` has to be deployed using a tool of choice. It references the generated verification contract `verifier.sol` which has to be available during deployment.
+- Last, the zkRelay contract `batch_verifier.sol` has to be deployed using a tool of choice. It references the generated verification contract `verifier.sol` which has to be available during deployment.
 
 ## Off-chain validation
 
