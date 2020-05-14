@@ -5,7 +5,7 @@ from create_input import generateZokratesInputFromBlock
 
 cmd_compute_witness = 'zokrates compute-witness --light -a '
 cmd_generate_proof = 'zokrates generate-proof'
-BATCH_SIZE = 63
+BATCH_SIZE = 21 
 
 def validateBatchFromBlockNo(blockNo):
     os.system(cmd_compute_witness + generateZokratesInputFromBlock((blockNo-1)*BATCH_SIZE+1, BATCH_SIZE))
