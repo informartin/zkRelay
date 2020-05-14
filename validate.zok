@@ -113,12 +113,13 @@ def get_hex_length_bits(field[24] bits) -> (field):
 return result
 
 // call with last field of block array
-def validate_target(field epoch_head, field epoch_tail, field next_epoch_head) -> (field[2]):
+def validate_target(field epoch_head, field[128] epoch_tail, field next_epoch_head) -> (field[2]):
     epoch_head_unpacked = unpack128(epoch_head)
-    epoch_tail_unpacked = unpack128(epoch_tail)
+    epoch_head_unpacked_big_endian = toBigEndian(epoch_head_unpacked[32..64])
+    epoch_tail_unpacked_big_endian = toBigEndian(epoch_tail[32..64])
     next_epoch_head_unpacked = unpack128(next_epoch_head)
-    time_head = pack128([...[0; 96], ...toBigEndian(epoch_head_unpacked[32..64])])
-    time_tail = pack128([...[0; 96], ...toBigEndian(epoch_tail_unpacked[32..64])])
+    time_head = pack128([...[0; 96], ...epoch_head_unpacked_big_endian])
+    time_tail = pack128([...[0; 96], ...epoch_tail_unpacked_big_endian])
 
     current_target = packTarget(toBigEndian(epoch_head_unpacked[64..96]))
     field time_delta = time_tail - time_head
@@ -161,92 +162,100 @@ def hash_block_header(field[5] preimage) -> (field[2]):
 
 return [res0, res1]
 
+def is_equal256(field[256] a, field[256] b) -> (field):
+    field result = 1
+    for field i in 0..256 do
+        result = if a[i] == b[i] then result else 0 fi
+    endfor
+return result
 
-def validate_block_header(field reference_target, field[2] prev_block_hash, field[5] preimage) -> (field[3]):
-	a = unpack128(preimage[0])
-	b = unpack128(preimage[1])
-	c = unpack128(preimage[2])
-	d = unpack128(preimage[3])
-	e = unpack128(preimage[4])
 
-    encoded_prev_block_hash1 = pack128([...a[32..128], ...b[0..32]])
-    encoded_prev_block_hash2 = pack128([...b[32..128], ...c[0..32]])
+def validate_block_header(field reference_target, field[256] prev_block_hash, field[5][128] preimage) -> (field[257]):
+/*
+    encoded_prev_block_hash1 = pack128([...preimage[0][32..128], ...preimage[1][0..32]])
+    encoded_prev_block_hash2 = pack128([...preimage[1][32..128], ...preimage[2][0..32]])
     field valid = if encoded_prev_block_hash1 == prev_block_hash[0] && encoded_prev_block_hash2 == prev_block_hash[1] \
         then 1 else 0 fi
+*/
+    field valid = is_equal256([...preimage[0][32..128], ...preimage[1][0..32], ...preimage[1][32..128], ...preimage[2][0..32]], prev_block_hash)
 
     // converting to big endian is not necessary here, as reference target is encoded little endian
-    field current_target = pack128([...[0; 96], ...e[64..96]])
+    field current_target = pack128([...[0; 96], ...preimage[4][64..96]])
     valid = if valid == 1 && current_target == reference_target then 1 else 0 fi
 
-    field[256] preimage1 = [...a, ...b]
-    field[256] preimage2 = [...c, ...d]
-    field[256] preimage3 = [...[...e, 1], ...[0; 127]]
+    field[256] preimage1 = [...preimage[0], ...preimage[1]]
+    field[256] preimage2 = [...preimage[2], ...preimage[3]]
+    field[256] preimage3 = [...[...preimage[4], 1], ...[0; 127]]
     field[256] dummy = [...[0; 246], ...[1, 0, 1, 0, 0, 0, 0, 0, 0, 0]] //second array indicates length of preimage = 640bit
 
     intermediary = sha256for1024(preimage1, preimage2, preimage3, dummy)
 
-    r = sha256only(intermediary)
+    field[256] r = sha256only(intermediary)
 
-    res0 = pack128(r[0..128])
-    res1 = pack128(r[128..256])
-
-    target = packTarget(toBigEndian(e[64..96]))
+    target = packTarget(toBigEndian(preimage[4][64..96]))
 
     valid = if valid == 1 && target > pack128(toBigEndian(r[128..256])) then 1 else 0 fi
 
-return [valid, res0, res1]
-//return [valid, target, pack128(toBigEndian(r[128..256]))] //output for test purposes
+return [valid, ...r]
 
 
-def main(field first_block_epoch, field[2] prev_block_hash, private field[100] intermediate_blocks, field[5] final_block) -> (field[5]):
+def main(field first_block_epoch, field[2] prev_block_hash, private field[100][128] intermediate_blocks, field[5] final_block) -> (field[3]):
     unpacked_raw_target = unpack128(first_block_epoch)
     // converting to big endian is not necessary here, as it is compared to a little endian encoding
     // it is not used for calculations
     field reference_target = pack128([...[0; 96], ...unpacked_raw_target[64..96]])
     field result = 1
-    block1 = validate_block_header(reference_target, prev_block_hash, intermediate_blocks[0..5])
+    field[128] prev_block_hash_unpacked_a = unpack128(prev_block_hash[0])
+    field[128] prev_block_hash_unpacked_b = unpack128(prev_block_hash[1])
+    block1 = validate_block_header(reference_target, [...prev_block_hash_unpacked_a, ...prev_block_hash_unpacked_b], intermediate_blocks[0..5])
     result = if block1[0] == 0 || result == 0 then 0 else 1 fi
-    block2 = validate_block_header(reference_target, block1[1..3], intermediate_blocks[5..10])
+    block2 = validate_block_header(reference_target, block1[1..257], intermediate_blocks[5..10])
     result = if block2[0] == 0 || result == 0 then 0 else 1 fi
-    block3 = validate_block_header(reference_target, block2[1..3], intermediate_blocks[10..15])
+    block3 = validate_block_header(reference_target, block2[1..257], intermediate_blocks[10..15])
     result = if block3[0] == 0 || result == 0 then 0 else 1 fi
-    block4 = validate_block_header(reference_target, block3[1..3], intermediate_blocks[15..20])
+    block4 = validate_block_header(reference_target, block3[1..257], intermediate_blocks[15..20])
     result = if block4[0] == 0 || result == 0 then 0 else 1 fi
-    block5 = validate_block_header(reference_target, block4[1..3], intermediate_blocks[20..25])
+    block5 = validate_block_header(reference_target, block4[1..257], intermediate_blocks[20..25])
     result = if block5[0] == 0 || result == 0 then 0 else 1 fi
-    block6 = validate_block_header(reference_target, block5[1..3], intermediate_blocks[25..30])
+    block6 = validate_block_header(reference_target, block5[1..257], intermediate_blocks[25..30])
     result = if block6[0] == 0 || result == 0 then 0 else 1 fi
-    block7 = validate_block_header(reference_target, block6[1..3], intermediate_blocks[30..35])
+    block7 = validate_block_header(reference_target, block6[1..257], intermediate_blocks[30..35])
     result = if block7[0] == 0 || result == 0 then 0 else 1 fi
-    block8 = validate_block_header(reference_target, block7[1..3], intermediate_blocks[35..40])
+    block8 = validate_block_header(reference_target, block7[1..257], intermediate_blocks[35..40])
     result = if block8[0] == 0 || result == 0 then 0 else 1 fi
-    block9 = validate_block_header(reference_target, block8[1..3], intermediate_blocks[40..45])
+    block9 = validate_block_header(reference_target, block8[1..257], intermediate_blocks[40..45])
     result = if block9[0] == 0 || result == 0 then 0 else 1 fi
-    block10 = validate_block_header(reference_target, block9[1..3], intermediate_blocks[45..50])
+    block10 = validate_block_header(reference_target, block9[1..257], intermediate_blocks[45..50])
     result = if block10[0] == 0 || result == 0 then 0 else 1 fi
-    block11 = validate_block_header(reference_target, block10[1..3], intermediate_blocks[50..55])
+    block11 = validate_block_header(reference_target, block10[1..257], intermediate_blocks[50..55])
     result = if block11[0] == 0 || result == 0 then 0 else 1 fi
-    block12 = validate_block_header(reference_target, block11[1..3], intermediate_blocks[55..60])
+    block12 = validate_block_header(reference_target, block11[1..257], intermediate_blocks[55..60])
     result = if block12[0] == 0 || result == 0 then 0 else 1 fi
-    block13 = validate_block_header(reference_target, block12[1..3], intermediate_blocks[60..65])
+    block13 = validate_block_header(reference_target, block12[1..257], intermediate_blocks[60..65])
     result = if block13[0] == 0 || result == 0 then 0 else 1 fi
-    block14 = validate_block_header(reference_target, block13[1..3], intermediate_blocks[65..70])
+    block14 = validate_block_header(reference_target, block13[1..257], intermediate_blocks[65..70])
     result = if block14[0] == 0 || result == 0 then 0 else 1 fi
-    block15 = validate_block_header(reference_target, block14[1..3], intermediate_blocks[70..75])
+    block15 = validate_block_header(reference_target, block14[1..257], intermediate_blocks[70..75])
     result = if block15[0] == 0 || result == 0 then 0 else 1 fi
-    block16 = validate_block_header(reference_target, block15[1..3], intermediate_blocks[75..80])
+    block16 = validate_block_header(reference_target, block15[1..257], intermediate_blocks[75..80])
     result = if block16[0] == 0 || result == 0 then 0 else 1 fi
-    block17 = validate_block_header(reference_target, block16[1..3], intermediate_blocks[80..85])
+    block17 = validate_block_header(reference_target, block16[1..257], intermediate_blocks[80..85])
     result = if block17[0] == 0 || result == 0 then 0 else 1 fi
-    block18 = validate_block_header(reference_target, block17[1..3], intermediate_blocks[85..90])
+    block18 = validate_block_header(reference_target, block17[1..257], intermediate_blocks[85..90])
     result = if block18[0] == 0 || result == 0 then 0 else 1 fi
-    block19 = validate_block_header(reference_target, block18[1..3], intermediate_blocks[90..95])
+    block19 = validate_block_header(reference_target, block18[1..257], intermediate_blocks[90..95])
     result = if block19[0] == 0 || result == 0 then 0 else 1 fi
-    block20 = validate_block_header(reference_target, block19[1..3], intermediate_blocks[95..100])
+    block20 = validate_block_header(reference_target, block19[1..257], intermediate_blocks[95..100])
     result = if block20[0] == 0 || result == 0 then 0 else 1 fi
     e = unpack128(final_block[4]) //TODO: Clean up, dirty mirty
-    block21 = validate_block_header(pack128([...[0; 96], ...e[64..96]]), block20[1..3], final_block)
+    a = unpack128(final_block[0])
+    b = unpack128(final_block[1])
+    c = unpack128(final_block[2])
+    d = unpack128(final_block[3])
+    ee = unpack128(final_block[4])
+    block21 = validate_block_header(pack128([...[0; 96], ...e[64..96]]), block20[1..257], [a,b,c,d,ee])
     result = if block21[0] == 0 || result == 0 then 0 else 1 fi
 
     target_is_valid = validate_target(first_block_epoch, intermediate_blocks[99], final_block[4])
-return [result, target_is_valid[0], ...block21[1..3], target_is_valid[1]]
+return [result, target_is_valid[0], target_is_valid[1]]
+//TODO: Hash public final block header in smart contract!
