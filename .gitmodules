@@ -1,3 +1,3 @@
-[submodule "preprocessing/merkle_tree/pycrypto"]
-	path = preprocessing/merkle_tree/pycrypto
+[submodule "preprocessing/pycrypto"]
+	path = preprocessing/pycrypto
 	url = https://github.com/Zokrates/pycrypto.git

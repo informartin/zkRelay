@@ -109,5 +109,4 @@ def generateZokratesInputForMerkleProof(first_block, amount):
     last_block = first_block + amount - 1
     block_hashes = getBlockHeadersInRange(first_block, last_block+1)
     joined_blocks = ''.join(block_hashes)
-    print(joined_blocks)
     return hexToBinaryZokratesInput(joined_blocks)
