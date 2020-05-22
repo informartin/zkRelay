@@ -20,12 +20,9 @@ def compute_merkle_tree(leafs):
 
 def compute_full_merkle_tree_helper(leafs):
     hasher = PedersenHasher(b"test")
-    print(leafs)
     tree = []
     for i in range(0, len(leafs), 2):
-        print(i)
         if not ((leafs[i] == '') & (leafs[i+1] == '')):
-            print('one')
             left = leafs[i]
             right = leafs[i+1] if leafs[i+1] != '' else left
             preimage = bytes.fromhex(left + right)
@@ -33,19 +30,19 @@ def compute_full_merkle_tree_helper(leafs):
             compressedDigest = Point.compress(digest).hex()
             tree.append(compressedDigest)
         else:
-            print('two')
             tree.append('')
 
     if len(leafs) > 2:
-        tree.extend(compute_merkle_tree(tree))
+        tree[:0] = compute_full_merkle_tree_helper(tree)
 
     return tree
 
 def compute_full_merkle_tree(leafs):
+    # fill tree
     next_exponent_two = 2**math.ceil(math.log(len(leafs),2))
     leafs.extend(['' for _ in range(0, next_exponent_two-len(leafs))])
-    leafs.extend(compute_full_merkle_tree_helper(leafs))
+    leafs[:0] = compute_full_merkle_tree_helper(leafs)
     return leafs
 
 #test
-#print(compute_full_merkle_tree(['000000000000000000096077576a25a456c71ec9dbc4199ccd6f7927ac346aff','00000000000000000001099e1a3416ca8b396ea983ebcc6a53f16be7cf5e5991', '000000000000000000045ffde9a4e9481cee2db487fbf267fb5b406d9391953f', '0000000000000000000c2a25d4cb3efa22187b97892fd9739d54b7cba6f33f3d', '0000000000000000000f7e22a81383aa0fbd5daa1256a42185a4b4e938c8d219']))
+#print(compute_full_merkle_tree(['00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048', '000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd', '0000000082b5015589a3fdf2d4baff403e6f0be035a5d9742c1cae6295464449', '000000004ebadb55ee9096c9a2f8880e09da59c0d68b1c228da88e48844a1485', '000000009b7262315dbf071787ad3656097b892abffd1f95a1a022f896f533fc']))
