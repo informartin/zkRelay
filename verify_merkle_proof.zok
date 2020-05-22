@@ -2,12 +2,11 @@ import "hashes/pedersen/512bit.zok" as pedersenhash
 import "utils/pack/pack128.zok" as pack128
 
 
-def main(field[256] proof_header, field[5][256] path, field[5] lr) -> (field[2]):
+def main(field[256] proof_header, field[3][256] path, field[5] lr) -> (field[2]):
     field[256] layer0 = if lr[0] == 0 then pedersenhash([...path[0], ...proof_header]) else pedersenhash([...proof_header, ...path[0]]) fi
-    field[256] layer1 = if lr[1] == 0 then pedersenhash([...path[1], ...proof_header]) else pedersenhash([...proof_header, ...path[1]]) fi
-    field[256] layer2 = if lr[2] == 0 then pedersenhash([...path[2], ...proof_header]) else pedersenhash([...proof_header, ...path[2]]) fi
-    field[256] layer3 = if lr[3] == 0 then pedersenhash([...path[3], ...proof_header]) else pedersenhash([...proof_header, ...path[3]]) fi
-    field[256] root = if lr[4] == 0 then pedersenhash([...path[4], ...proof_header]) else pedersenhash([...proof_header, ...path[4]]) fi
+    field[256] layer1 = if lr[1] == 0 then pedersenhash([...path[1], ...layer0]) else pedersenhash([...layer0, ...path[1]]) fi
+    field[256] layer2 = if lr[2] == 0 then pedersenhash([...path[2], ...layer1]) else pedersenhash([...layer1, ...path[2]]) fi
+    field[256] root = if lr[4] == 0 then pedersenhash([...path[3], ...layer2]) else pedersenhash([...layer2, ...path[3]]) fi
 
     res0 = pack128(root[0..128])
     res1 = pack128(root[128..256])
