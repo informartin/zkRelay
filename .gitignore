@@ -10,3 +10,5 @@ output/proof*
 output/witness*
 .swp
 abi.json
+venv
+__pycache__
