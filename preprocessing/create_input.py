@@ -32,6 +32,7 @@ def getBlockHeadersInRange(i, j):
 
 def getBlocksInRange(i, j):
     block_hashes = getBlockHeadersInRange(i, j)
+    rpc_connection = AuthServiceProxy("http://%s:%s@127.0.0.1:8332"%getCredentials())
     blocks = rpc_connection.batch_([["getblock", h] for h in block_hashes])
     return blocks
 
