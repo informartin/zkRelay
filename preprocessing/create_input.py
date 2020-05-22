@@ -15,17 +15,20 @@ def littleEndian(string):
     splited.reverse()
     return "".join(splited)
 
+
 def getCredentials():
     with open('preprocessing/pw') as fp:
     	user = fp.readline()[:-1]
     	password = fp.readline()[:-1]
     return user, password
 
+
 def getBlockHeadersInRange(i, j):
     rpc_connection = AuthServiceProxy("http://%s:%s@127.0.0.1:8332"%getCredentials())
     commands = [["getblockhash", height] for height in range(i, j)]
     block_hashes = rpc_connection.batch_(commands)
     return block_hashes
+
 
 def getBlocksInRange(i, j):
     block_hashes = getBlockHeadersInRange(i, j)
@@ -37,6 +40,12 @@ def hexToDecimalZokratesInput(input):
     preimage = bytes.fromhex(input)
     bitarray = BitArray(bytes=preimage)
     return [int(i, 2) for i in splitStringFromBack(bitarray.bin, 128)]
+
+
+def hexToBinaryZokratesInput(input):
+    preimage = bytes.fromhex(input)
+    bitarray = BitArray(bytes=preimage)
+    return " ".join(bitarray.bin)
 
 
 def createZokratesInputFromBlock(block):
@@ -51,7 +60,7 @@ def createZokratesInputFromBlock(block):
 
     header = version + little_endian_previousHash + little_endian_merkleRoot + little_endian_time + little_endian_difficultyBits + little_endian_nonce
 
-    return hexToDecimalZokratesInput(header)
+    return header
 
 
 def generateZokratesInputFromBlockLegacy(first_block, amount):
@@ -79,14 +88,14 @@ def generateZokratesInputFromBlock(first_block, amount):
     epoch_header_block_number = first_block if (first_block+1) % 2016 == 0 else first_block - (first_block % 2016)
     epoch_head = getBlocksInRange(epoch_header_block_number, epoch_header_block_number+1) \
         if first_block >= 2016 else getBlocksInRange(0, 1)
-    epoch_head = createZokratesInputFromBlock(epoch_head[0])
+    epoch_head = hexToDecimalZokratesInput(createZokratesInputFromBlock(epoch_head[0]))
     #list(map(lambda x: print(x['height']), blocks[0:len(blocks)-1]))
     #print(blocks[len(blocks)-1]['height'])
     prev_block_hash = hexToDecimalZokratesInput(littleEndian(getBlocksInRange(first_block-1,first_block)[0]["hash"]))
-    intermediate_zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:len(blocks)-1]]
-    intermediate_zokrates_blocks = [item for sublist in intermediate_zokrates_blocks for item in sublist] #flatten
-    final_zokrates_block = createZokratesInputFromBlock(blocks[len(blocks)-1])
-    return str([epoch_head[4], *prev_block_hash, *intermediate_zokrates_blocks, *final_zokrates_block]).replace(',','').replace('[','').replace(']','')
+    intermediate_zokrates_blocks = [hexToBinaryZokratesInput(createZokratesInputFromBlock(block)) for block in blocks[0:len(blocks)-1]]
+    #intermediate_zokrates_blocks = [item for sublist in intermediate_zokrates_blocks for item in sublist] #flatten
+    final_zokrates_block = hexToDecimalZokratesInput(createZokratesInputFromBlock(blocks[len(blocks)-1]))
+    return str([epoch_head[4], *prev_block_hash, *intermediate_zokrates_blocks, *final_zokrates_block]).replace(',','').replace('[','').replace(']','').replace('\'','')
 
 
 def generateZokratesInputForBlocks(blocks):
@@ -94,3 +103,11 @@ def generateZokratesInputForBlocks(blocks):
     blocks = [item for sublist in blocks for item in sublist] #flatten
     zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:len(blocks)]]
     print(str(zokrates_blocks).replace(',','').replace('[','').replace(']',''))
+
+
+def generateZokratesInputForMerkleProof(first_block, amount):
+    last_block = first_block + amount - 1
+    block_hashes = getBlockHeadersInRange(first_block, last_block+1)
+    joined_blocks = ''.join(block_hashes)
+    print(joined_blocks)
+    return hexToBinaryZokratesInput(joined_blocks)

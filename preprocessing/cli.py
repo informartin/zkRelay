@@ -2,10 +2,11 @@
 import sys
 import os
 from create_input import generateZokratesInputFromBlock
+from create_input import generateZokratesInputForMerkleProof
 
 cmd_compute_witness = 'zokrates compute-witness --light -a '
 cmd_generate_proof = 'zokrates generate-proof'
-BATCH_SIZE = 63
+BATCH_SIZE = 5
 
 def validateBatchFromBlockNo(blockNo):
     os.system(cmd_compute_witness + generateZokratesInputFromBlock((blockNo-1)*BATCH_SIZE+1, BATCH_SIZE))
@@ -19,14 +20,15 @@ def validateBatchesFromBlockNo(blockNo, amountBatches):
 
 def main():
     arguments = len(sys.argv) - 1
-    if arguments > 2:
-        print('Too many arguments. Arg. 1: Starting Block number, Arg. 2(optional): Amount of batches')
-    if arguments < 1:
-        print('Missing argument. Arg. 1: Starting Block number, Arg. 2(optional): Amount of batches') 
-    if arguments == 1:
-        validateBatchFromBlockNo(int(sys.argv[1]))
-    if arguments == 2:
-        validateBatchesFromBlockNo(int(sys.argv[1]),int(sys.argv[2]))
+
+    if sys.argv[1] == "validate_blocks":
+        if arguments == 2:
+            validateBatchFromBlockNo(int(sys.argv[2]))
+        if arguments == 3:
+            validateBatchesFromBlockNo(int(sys.argv[2]),int(sys.argv[3]))
+    elif sys.argv[1] == "create_input_merkle_root":
+        print(generateZokratesInputForMerkleProof(int(sys.argv[2]), BATCH_SIZE))
+
 
 if __name__ == "__main__":
     main()
