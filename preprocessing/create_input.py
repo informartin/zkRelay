@@ -21,10 +21,14 @@ def getCredentials():
     	password = fp.readline()[:-1]
     return user, password
 
-def getBlocksInRange(i, j):
+def getBlockHeadersInRange(i, j):
     rpc_connection = AuthServiceProxy("http://%s:%s@127.0.0.1:8332"%getCredentials())
     commands = [["getblockhash", height] for height in range(i, j)]
     block_hashes = rpc_connection.batch_(commands)
+    return block_hashes
+
+def getBlocksInRange(i, j):
+    block_hashes = getBlockHeadersInRange(i, j)
     blocks = rpc_connection.batch_([["getblock", h] for h in block_hashes])
     return blocks
 
