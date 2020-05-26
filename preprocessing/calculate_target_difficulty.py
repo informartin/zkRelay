@@ -1,6 +1,7 @@
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from create_input import getCredentials
 
+
 def getBlock(i):
     rpc_connection = AuthServiceProxy("http://%s:%s@127.0.0.1:8332"%getCredentials())
     block_hash = rpc_connection.getblockhash(i)
@@ -21,15 +22,9 @@ def calculateNextTargetTest(i):
     current_block = getBlock(i)
     epoch_head_block = getBlock(i-2015)
     time_delta = int(current_block["time"])-int(epoch_head_block["time"])
-    #print('Time delta: ' + str(time_delta))
     target_time_delta = 600 * 2016
     current_target = int(current_block["bits"][2:] + '00' * (int(current_block["bits"][:2], 16) - 3), 16)
-    #print('Current target: ' + str(current_target))
-    #print('Current target: ' + str(hex(current_target)))
-    new_target = current_target * time_delta #/ target_time_delta
-    #print('New target: ' + str(new_target))
-    #print('New target: ' + str(targetToBits(hex(new_target)[2:])))
-    #print('New target: ' + str(hex(new_target)))
+    new_target = current_target * time_delta
     target = '00' + hex(int(bitsToBigInt(current_block["bits"]) * time_delta / target_time_delta))[2:]
     target = bitsToBigInt('1d00ffff') if int(target, 16) < bitsToBigInt('1d00ffff') else target
     return target
@@ -43,6 +38,7 @@ def bitsToBigInt(bits):
     return int(bits[2:] + '00' * (int(bits[:2], 16) - 3), 16)
 
 
+# For demonstration purposes only, not required for zkRelay
 def main():
     target = calculateNextTarget(32255)
     #target = calculateNextTarget(2015)
