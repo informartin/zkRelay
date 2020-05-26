@@ -16,9 +16,9 @@ def main():
         print('Irregular number of arguments. Arg. 1: Batch size')
         return
     batch_size = int(sys.argv[1])
-    write_zokrates_file(generate_validation_code(batch_size), "validate{i}.zok".format(i=batch_size))
-    write_zokrates_file(generate_root_code(batch_size), "compute_merkle_root{i}.zok".format(i=batch_size))
-    write_zokrates_file(generate_merkle_proof_validation_code(batch_size), "verify_merkle_proof{i}.zok".format(i=batch_size))
+    write_zokrates_file(generate_validation_code(batch_size), "validate.zok".format(i=batch_size))
+    write_zokrates_file(generate_root_code(batch_size), "compute_merkle_root.zok".format(i=batch_size))
+    write_zokrates_file(generate_merkle_proof_validation_code(batch_size), "verify_merkle_proof.zok".format(i=batch_size))
     
 
 if __name__ == "__main__":

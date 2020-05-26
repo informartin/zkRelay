@@ -4,7 +4,7 @@ import "utils/pack/unpack128.zok" as unpack128
 import "hashes/sha256/1024bit.zok" as sha256for1024
 import "./sha256only.zok" as sha256only
 import "./getHexLength.zok" as getHexLength
-import "./compute_merkle_root{i}.zok" as compute_merkle_root
+import "./compute_merkle_root.zok" as compute_merkle_root
 
 def toBigEndian(field[32] value) -> (field[32]):
     return [
@@ -186,7 +186,7 @@ def validate_block_header(field reference_target, field[256] bin_prev_block_hash
 
 return [valid, ...r]
 
-""".format(i=n_blocks)
+"""
     main_block = []
     main_block.append("def main(field first_block_epoch, field[2] prev_block_hash, private field[{n_intermediate}][640] intermediate_blocks, field[5] final_block) -> (field[7]):".format(n_intermediate=(n_blocks-1)))
     main_block.append("""

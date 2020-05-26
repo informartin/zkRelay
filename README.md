@@ -5,7 +5,7 @@ zkRelay facilitates a chain-relay from Bitcoin to Ethereum through zkSNARKS.
 The implementation is based on [ZoKrates](https://github.com/Zokrates/ZoKrates) and performs off-chain Bitcoin header chain validations, while only the resulting prrof is submitted to the target ledger.
 The main branch of this repository includes an implementation that performs batch validations for 63 Bitcoin blocks.
 
-The workflow of zkRelay is seperated into two steps, a one-time compilation and setup step and many-time validation.
+The workflow of zkRelay is seperated into three steps, ZoKrates code generation, a one-time compilation and setup step and many-time validation.
 
 As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed for both steps.
 
@@ -17,9 +17,13 @@ As the ZoKrates code is static for each distinct batch size, we provide a script
 
 ## Compilation and Setup
 
+- To install the required python dependencies, run:
+
+  `pip install -r python-requirements`
+
 - First, the off-chain validation program has to be compiled:
 
-  `zokrates compile --light -i validate{BATCH_SIZE}.zok`
+  `zokrates compile --light -i validate.zok`
 
 - Second, the proving and verfication keys are generated in the setup step:
 
