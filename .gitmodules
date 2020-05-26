@@ -1,1 +1,3 @@
-    
+[submodule "preprocessing/pycrypto"]
+	path = preprocessing/pycrypto
+	url = https://github.com/Zokrates/pycrypto.git
