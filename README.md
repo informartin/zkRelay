@@ -1,13 +1,13 @@
-# BTZ Relay
+# zkRelay
 
-BTZ Relay facilitates a chain-relay from Bitcoin to Ethereum through zkSNARKS.
+zkRelay facilitates a chain-relay from Bitcoin to Ethereum through zkSNARKS.
 
 The implementation is based on [ZoKrates](https://github.com/Zokrates/ZoKrates) and performs off-chain Bitcoin header chain validations, while only the resulting prrof is submitted to the target ledger.
 The main branch of this repository includes an implementation that performs batch validations for 63 Bitcoin blocks.
 
-The workflow of BTZ Relay is seperated into two steps, a one-time compilation and setup step and many-time validation.
+The workflow of zkRelay is seperated into two steps, a one-time compilation and setup step and many-time validation.
 
-As a prerequisite, ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed for both steps.
+As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed for both steps.
 
 ## Generate ZoKrates code
 
@@ -28,12 +28,12 @@ As the ZoKrates code is static for each distinct batch size, we provide a script
 - Third, a smart contract is generated that validates proofs:
 
   `zokrates export-verifier`
-
-- Last, the BTZ Relay contract `batch_verifier.sol` has to be deployed using a tool of choice. It references the generated verification contract `verifier.sol` which has to be available during deployment.
+  
+- Last, the zkRelay contract `batch_verifier.sol` has to be deployed using a tool of choice. It references the generated verification contract `verifier.sol` which has to be available during deployment.
 
 ## Off-chain validation
 
-- As a prerequisite, a the current implementation presumes a local Bitcoin client at `127.0.0.1:8332`, the credentials have to be store in `preprocessing/pw`
+- As a prerequisite, a the current implementation presumes a local Bitcoin client at `127.0.0.1:8332`, the credentials have to be stored in `preprocessing/pw`. The script requires Python3.
 
 - To validate a batch of 63, run the following script, where `n` corresponds to the block number of the first block in the batch:
 
