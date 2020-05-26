@@ -1,5 +1,6 @@
 import math
 
+
 def generate_compute_root(number_leafs):
     if number_leafs > 2:
         output = '\tfield[{len}][256] layer{layer} = [\n'.format(len=math.ceil(number_leafs/2), layer=(math.ceil(math.log(number_leafs,2))-1))
@@ -15,6 +16,7 @@ def generate_compute_root(number_leafs):
         output = output + generate_compute_root(math.ceil(number_leafs/2))
 
     return output
+
 
 def generate_root_code(number_leafs):
     output = ('import "hashes/pedersen/512bit.zok" as pedersenhash\nimport "utils/pack/unpack128.zok" as unpack128\nimport "utils/pack/pack128.zok" as pack128\n' +

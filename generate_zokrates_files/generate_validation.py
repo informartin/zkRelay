@@ -1,11 +1,11 @@
 def generate_validation_code(n_blocks):
-    static_code = """
-import "utils/pack/pack128.zok" as pack128
+    static_code = """import "utils/pack/pack128.zok" as pack128
 import "utils/pack/unpack128.zok" as unpack128
 import "hashes/sha256/1024bit.zok" as sha256for1024
 import "./sha256only.zok" as sha256only
 import "./getHexLength.zok" as getHexLength
 import "./compute_merkle_root{i}.zok" as compute_merkle_root
+
 def toBigEndian(field[32] value) -> (field[32]):
     return [
             ...value[24..32],
