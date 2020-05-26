@@ -43,6 +43,3 @@ def compute_full_merkle_tree(leafs):
     leafs.extend(['' for _ in range(0, next_exponent_two-len(leafs))])
     leafs[:0] = compute_full_merkle_tree_helper(leafs)
     return leafs
-
-#test
-#print(compute_full_merkle_tree(['00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048', '000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd', '0000000082b5015589a3fdf2d4baff403e6f0be035a5d9742c1cae6295464449', '000000004ebadb55ee9096c9a2f8880e09da59c0d68b1c228da88e48844a1485', '000000009b7262315dbf071787ad3656097b892abffd1f95a1a022f896f533fc']))

@@ -64,37 +64,16 @@ def createZokratesInputFromBlock(block):
     return header
 
 
-def generateZokratesInputFromBlockLegacy(first_block, amount):
-    last_block = first_block + amount - 1
-    blocks = getBlocksInRange(first_block, last_block+1)
-
-    prior_blockhash = GENESIS_BLOCK_HASH if first_block == 1 else getBlocksInRange(first_block-1,first_block)[0]["hash"]
-    prior_block_zokrates_input = hexToDecimalZokratesInput(littleEndian(prior_blockhash))
-    intermediate_zokrates_blocks = [createZokratesInputFromBlock(block) for block in blocks[0:amount - 1]]
-    intermediate_zokrates_blocks = [item for sublist in intermediate_zokrates_blocks for item in sublist] #flatten
-    final_zokrates_block = createZokratesInputFromBlock(blocks[amount - 1])
-
-    print(str([*prior_block_zokrates_input, *intermediate_zokrates_blocks, *final_zokrates_block])
-          .replace(',','')
-          .replace('[','')
-          .replace(']',''))
-
-
 def generateZokratesInputFromBlock(first_block, amount):
     last_block = first_block + amount
     blocks = getBlocksInRange(first_block, last_block)
 
-    #prior_blockhash = GENESIS_BLOCK_HASH if first_block == 1 else getBlocksInRange(first_block-1,first_block)[0]["hash"]
-    #prior_block_zokrates_input = hexToDecimalZokratesInput(littleEndian(prior_blockhash))
     epoch_header_block_number = first_block if (first_block+1) % 2016 == 0 else first_block - (first_block % 2016)
     epoch_head = getBlocksInRange(epoch_header_block_number, epoch_header_block_number+1) \
         if first_block >= 2016 else getBlocksInRange(0, 1)
     epoch_head = hexToDecimalZokratesInput(createZokratesInputFromBlock(epoch_head[0]))
-    #list(map(lambda x: print(x['height']), blocks[0:len(blocks)-1]))
-    #print(blocks[len(blocks)-1]['height'])
     prev_block_hash = hexToDecimalZokratesInput(littleEndian(getBlocksInRange(first_block-1,first_block)[0]["hash"]))
     intermediate_zokrates_blocks = [hexToBinaryZokratesInput(createZokratesInputFromBlock(block)) for block in blocks[0:len(blocks)-1]]
-    #intermediate_zokrates_blocks = [item for sublist in intermediate_zokrates_blocks for item in sublist] #flatten
     final_zokrates_block = hexToDecimalZokratesInput(createZokratesInputFromBlock(blocks[len(blocks)-1]))
     return str([epoch_head[4], *prev_block_hash, *intermediate_zokrates_blocks, *final_zokrates_block]).replace(',','').replace('[','').replace(']','').replace('\'','')
 
