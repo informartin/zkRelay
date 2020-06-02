@@ -115,11 +115,12 @@ def get_hex_length_bits(field[24] bits) -> (field):
 return result
 
 // call with last field of block array
-def validate_target(field epoch_head, field[32] epoch_tail, field next_epoch_head) -> (field[2]):
+def validate_target(field epoch_head, field epoch_tail, field next_epoch_head) -> (field[2]):
     field[128] epoch_head_unpacked = unpack128(epoch_head)
+    field[128] epoch_tail_unpacked = unpack128(epoch_tail)
     field[128] next_epoch_head_unpacked = unpack128(next_epoch_head)
     field time_head = pack128([...[0; 96], ...toBigEndian(epoch_head_unpacked[32..64])])
-    field time_tail = pack128([...[0; 96], ...toBigEndian(epoch_tail)])
+    field time_tail = pack128([...[0; 96], ...toBigEndian(epoch_tail_unpacked[32..64])])
 
     field current_target = packTarget(toBigEndian(epoch_head_unpacked[64..96]))
     field time_delta = time_tail - time_head
@@ -163,24 +164,33 @@ def hash_block_header(field[5] preimage) -> (field[2]):
 return [res0, res1]
 
 
-def validate_block_header(field reference_target, field[256] bin_prev_block_hash, field[640] preimage) -> (field[257]):
-    field encoded_prev_block_hash1 = pack128(preimage[32..160])
-    field encoded_prev_block_hash2 = pack128(preimage[160..288])
+def validate_block_header(field reference_target, field[256] bin_prev_block_hash, field[5] preimage) -> (field[257]):
+    a = unpack128(preimage[0])
+	b = unpack128(preimage[1])
+	c = unpack128(preimage[2])
+	d = unpack128(preimage[3])
+	e = unpack128(preimage[4])
+
+    encoded_prev_block_hash1 = pack128([...a[32..128], ...b[0..32]])
+    encoded_prev_block_hash2 = pack128([...b[32..128], ...c[0..32]])
     field[2] prev_block_hash = [pack128(bin_prev_block_hash[0..128]), pack128(bin_prev_block_hash[128..256])]
     field valid = if encoded_prev_block_hash1 == prev_block_hash[0] && encoded_prev_block_hash2 == prev_block_hash[1] \\
         then 1 else 0 fi
 
     // converting to big endian is not necessary here, as reference target is encoded little endian
-    field current_target = pack128([...[0; 96], ...preimage[576..608]])
+    field current_target = pack128([...[0; 96], ...e[64..96]])
     valid = if valid == 1 && current_target == reference_target then 1 else 0 fi
 
+    field[256] preimage1 = [...a, ...b]
+    field[256] preimage2 = [...c, ...d]
+    field[256] preimage3 = [...[...e, 1], ...[0; 127]]
     field[256] dummy = [...[0; 246], ...[1, 0, 1, 0, 0, 0, 0, 0, 0, 0]] //second array indicates length of preimage = 640bit
 
-    field[256] intermediary = sha256for1024(preimage[0..256], preimage[256..512], [...[...preimage[512..640], 1], ...[0; 127]], dummy)
+    intermediary = sha256for1024(preimage1, preimage2, preimage3, dummy)
+    
+    r = sha256only(intermediary)
 
-    field[256] r = sha256only(intermediary)
-
-    field target = packTarget(toBigEndian(preimage[576..608]))
+    target = packTarget(toBigEndian(e[64..96]))
 
     valid = if valid == 1 && target > pack128(toBigEndian(r[128..256])) then 1 else 0 fi
 
@@ -188,7 +198,7 @@ return [valid, ...r]
 
 """
     main_block = []
-    main_block.append("def main(field first_block_epoch, field[2] prev_block_hash, private field[{n_intermediate}][640] intermediate_blocks, field[5] final_block) -> (field[7]):".format(n_intermediate=(n_blocks-1)))
+    main_block.append("def main(field first_block_epoch, field[2] prev_block_hash, private field[{n_intermediate}][5] intermediate_blocks, field[5] final_block) -> (field[7]):".format(n_intermediate=(n_blocks-1)))
     main_block.append("""
     field[128] unpacked_raw_target = unpack128(first_block_epoch)
     // converting to big endian is not necessary here, as it is compared to a little endian encoding
@@ -213,11 +223,10 @@ return [valid, ...r]
 
     main_block.append("""
     field[128] e = unpack128(final_block[4]) //TODO: Clean up, dirty mirty
-    field[5][128] bin_final_block = [unpack128(final_block[0]),unpack128(final_block[1]),unpack128(final_block[2]),unpack128(final_block[3]),unpack128(final_block[4])]
-    field[257] block{n_final_block} = validate_block_header(pack128([...[0; 96], ...e[64..96]]), block{n_prev_block}[1..257], [...bin_final_block[0],...bin_final_block[1],...bin_final_block[2],...bin_final_block[3],...bin_final_block[4]])
+    field[257] block{n_final_block} = validate_block_header(pack128([...[0; 96], ...e[64..96]]), block{n_prev_block}[1..257], final_block)
     result = if block{n_final_block}[0] == 0 || result == 0 then 0 else 1 fi
 
-    field[2] target_is_valid = validate_target(first_block_epoch, intermediate_blocks[{n_enc_target}][544..576], final_block[4])
+    field[2] target_is_valid = validate_target(first_block_epoch, intermediate_blocks[{n_enc_target}][4], final_block[4])
 
     field[2] merkle_root = compute_merkle_root([{blocks}])
 
