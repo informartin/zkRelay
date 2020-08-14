@@ -1,7 +1,0 @@
-import "hashes/sha256/512bit.zok" as sha256
-
-def main(field[256] input) -> (field[256]):
-
-	field[256] dummyblock = [1, ...[0; 246], ...[1, 0, 0, 0, 0, 0, 0, 0, 0]]
-
-return sha256(input, dummyblock)
