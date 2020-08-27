@@ -20,7 +20,7 @@ $ . venv/bin/activate
 
 To install the required python dependencies and setup the CLI, run:
 ``` bash
-$ pip3 install --editable .
+$ pip3 install
 ```
 
 Now, you can use the cli by executing (in the venv):
