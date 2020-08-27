@@ -9,17 +9,35 @@ The workflow of zkRelay is seperated into three steps, ZoKrates code generation,
 
 As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed for both steps.
 
+## Setup zkRelay-CLI and env
+
+Before you install the required dependencies, we recommend to set up a venv:
+
+``` bash
+$ virtualenv venv
+$ . venv/bin/activate
+```
+
+To install the required python dependencies, run:
+``` bash
+$ pip3 install --editable .
+```
+
+Now, you can use the cli by executing:
+
+``` bash
+$ zkRelay-cli
+```
+
 ## Generate ZoKrates code
 
 As the ZoKrates code is static for each distinct batch size, we provide a script to generate the corresponding ZoKrates code for a given batch size `n`:
 
-  `python ./generate_zokrates_files/cli.py n`
+``` bash
+$ zkRelay-cli generate-zokrates-files n
+```
 
 ## Compilation and Setup
-
-- To install the required python dependencies, run:
-
-  `pip install -r python-requirements`
 
 - First, the off-chain validation program has to be compiled:
 
