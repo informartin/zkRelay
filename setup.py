@@ -8,7 +8,9 @@ setup(
         'Click',
         'python-bitcoinrpc==1.0',
         'bitstring==3.1.5',
-        'toml'
+        'toml',
+        'colorama',
+        'termcolor'
     ],
     entry_points='''
         [console_scripts]
