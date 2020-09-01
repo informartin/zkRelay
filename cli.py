@@ -23,12 +23,12 @@ def zkRelay_cli(ctx):
     ctx.obj = toml.load('./conf/zkRelay-cli.toml')
     pass
 
-@zkRelay_cli.command('generate-zokrates-files')
+@zkRelay_cli.command('generate-files')
 @click.argument('batch_size',
                 required=True,
                 type=click.INT)
 @click.pass_context
-def generate_zokrates_files(ctx, batch_size):
+def generate_files(ctx, batch_size):
     click.echo('Generating...')
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_validation_code(batch_size), "validate.zok".format(i=batch_size))
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_root_code(batch_size), "compute_merkle_root.zok".format(i=batch_size))
@@ -64,7 +64,7 @@ def generate_zokrates_files(ctx, batch_size):
 @click.argument('first_block_in_batch',
                 type=click.INT)
 @click.pass_context
-def validate_blocks(ctx, first_block_in_batch, multiple_batches, bc_host, bc_port, bc_user, bc_pwd):
+def validate(ctx, first_block_in_batch, multiple_batches, bc_host, bc_port, bc_user, bc_pwd):
     batch_size = int(ctx.obj['zokrates_file_generator']['batch_size'])
     ctx = processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd)
     if multiple_batches is not None:
@@ -107,7 +107,7 @@ def create_input_merkle_root(ctx, first_block_in_batch, bc_host, bc_port, bc_use
 
 @zkRelay_cli.command(short_help='Generates proof validator')
 @click.pass_context
-def compile_and_generate_proof_validator(ctx):
+def setup(ctx):
     """
     Executes 3 cmds:
 

@@ -26,7 +26,7 @@ $ pip3 install
 Now, you can use the cli by executing (in the venv):
 
 ``` bash
-$ zkRelay-cli
+$ zkRelay
 ```
 
 In `$PROJECT_DIR/conf/zkRelay-cli.toml` you can find the configuration file for the cli.
@@ -41,7 +41,7 @@ $ zkRelay-cli generate-zokrates-files n
 
 ## Compilation and Setup
 
-With the zkRelay-cli command `zkRelay-cli compile-and-generate-proof-validator` we start an execution pipeline of three ZoKrates cmds:
+With the zkRelay-cli command `zkRelay setup` we start an execution pipeline of three ZoKrates cmds:
 
 - First, the off-chain validation program has to be compiled:
 
@@ -67,13 +67,21 @@ The resulting zkRelay contract `batch_verifier.sol` has to be deployed using a t
 
 
 - As a prerequisite, the zkRelay-cli needs a connection to a Bitcoin client. You have two options:
-  1. Update the default values in the configuration file located under `$PROJECT_DIR/conf/zkRelay-cli.toml`.
-  2. Pass your overriding parameters directly to the CLI when executing the following command.
+  - Update the default values in the configuration file located under `$PROJECT_DIR/conf/zkRelay-cli.toml -> bitcoin_client` .
+     - Possible config parameters:
+        | Parameter | Description |
+        --- | ---
+        host | Host of BC client
+        port | Port of BC client
+        user | Username for access to the BC client
+        pwd | Password for access to the BC client
+
+  - Pass your overriding parameters directly to the CLI when executing the following command (see `zkRelay validate -h` for parameters)
 
 - To validate a batch, run the following cmd, where `n` corresponds to the block number of the first block in the batch:
 
 ``` bash
-$ zkRelay-cli validate-blocks n
+$ zkRelay validate n
 ```
 
 - The script retrieves the blocks from the Bitcoin client, formats them and uses ZoKrates to perform the off-chain validation. Thereafter it creates a proof for the given batch.

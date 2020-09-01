@@ -14,6 +14,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        zkRelay-cli=cli:zkRelay_cli
+        zkRelay=cli:zkRelay_cli
     ''',
 )
