@@ -44,6 +44,7 @@ def generate_files(ctx, batch_size):
 @zkRelay_cli.command()
 @click.option('-m', '--multiple_batches',
                 required=False,
+                help='Nr. of how many batches',
                 type=click.INT)
 @click.option('-bch', '--bc-host',
                 required=False,
@@ -66,7 +67,14 @@ def generate_files(ctx, batch_size):
 @click.pass_context
 def validate(ctx, first_block_in_batch, multiple_batches, bc_host, bc_port, bc_user, bc_pwd):
     batch_size = int(ctx.obj['zokrates_file_generator']['batch_size'])
-    ctx = processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd)
+
+    try:
+        ctx = processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd)
+    except:
+        click.echo(colored('Error, cannot validate.', 'red'))
+        click.echo('bc-host, bc-port, bc-user or bc-pwd not set in config file located at ./conf/zkRelay-cli.toml.')
+        return
+
     if multiple_batches is not None:
         preprocessing.validateBatchesFromBlockNo(ctx,
                                                     first_block_in_batch,
@@ -135,8 +143,19 @@ def setup(ctx):
         click.echo(sys.exc_info()[0])
 
 def processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd):
-    if bc_host is not None: ctx.obj.bitcoin_client.host = bc_host
-    if bc_port is not None: ctx.obj.bitcoin_client.port = bc_port
-    if bc_user is not None: ctx.obj.bitcoin_client.user = bc_user
-    if bc_pwd is not None: ctx.obj.bitcoin_client.pwd = bc_pwd
+    # override defaults in conf file with parameters from command line
+    if bc_host is not None: ctx.obj['bitcoin_client']['host'] = bc_host
+    if bc_port is not None: ctx.obj['bitcoin_client']['port'] = bc_port
+    if bc_user is not None: ctx.obj['bitcoin_client']['user'] = bc_user
+    if bc_pwd is not None: ctx.obj['bitcoin_client']['pwd'] = bc_pwd
+    
+    # check if any values where omitted
+    if ctx.obj['bitcoin_client']['host'] is None:
+        raise Exception
+    if ctx.obj['bitcoin_client']['port'] is None:
+        raise Exception
+    if ctx.obj['bitcoin_client']['user'] is None:
+        raise Exception
+    if ctx.obj['bitcoin_client']['pwd'] is None:
+        raise Exception
     return ctx
