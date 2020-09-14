@@ -11,8 +11,9 @@ output/witness*
 .swp
 abi.json
 venv
+venv/*
 __pycache__
 validate.zok
 verify_merkle_proof.zok
 compute_merkle_root.zok
-cli.egg-info
+zkRelay.egg-info
