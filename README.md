@@ -11,6 +11,8 @@ As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be 
 
 ## Setup zkRelay-CLI and env
 
+Our cli requires you to use python version 3.
+
 Before you install the required dependencies, we recommend to set up a venv:
 
 ``` bash
@@ -20,7 +22,7 @@ $ . venv/bin/activate
 
 To install the required python dependencies and setup the CLI, run:
 ``` bash
-$ pip3 install
+$ pip3 install .
 ```
 
 Now, you can use the cli by executing (in the venv):
@@ -36,12 +38,15 @@ In `$PROJECT_DIR/conf/zkRelay-cli.toml` you can find the configuration file for 
 As the ZoKrates code is static for each distinct batch size, we provide a script to generate the corresponding ZoKrates code for a given batch size `n`:
 
 ``` bash
-$ zkRelay-cli generate-zokrates-files n
+$ zkRelay generate-files n
 ```
 
 ## Compilation and Setup
 
-With the zkRelay-cli command `zkRelay setup` we start an execution pipeline of three ZoKrates cmds:
+``` bash
+$ zkRelay setup
+```
+With this zkRelay-cli command we start an execution pipeline of three ZoKrates cmds:
 
 - First, the off-chain validation program has to be compiled:
 
