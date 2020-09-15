@@ -1,0 +1,8 @@
+title = "zkRelay-cli config file"
+
+[bitcoin_client]
+host = "localhost"
+port = "8332"
+
+[zokrates_file_generator]
+batch_size = 0

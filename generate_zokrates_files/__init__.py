@@ -1,0 +1,5 @@
+# __init__.py
+from .generate_validation import generate_validation_code
+from .generate_root_computation import generate_root_code
+from .generate_merkle_proof_validation import generate_merkle_proof_validation_code
+from .file_helper import write_zokrates_file
