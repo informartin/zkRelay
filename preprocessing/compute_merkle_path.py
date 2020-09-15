@@ -1,4 +1,4 @@
-from create_input import hexToBinaryZokratesInput
+from .create_input import hexToBinaryZokratesInput
 
 def compute_merkle_path(tree, element):
     i = tree.index(element)
