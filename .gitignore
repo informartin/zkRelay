@@ -11,7 +11,6 @@ output/witness*
 .swp
 abi.json
 venv
-venv/*
 __pycache__
 validate.zok
 verify_merkle_proof.zok
