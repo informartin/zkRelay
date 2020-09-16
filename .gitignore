@@ -15,4 +15,4 @@ __pycache__
 validate.zok
 verify_merkle_proof.zok
 compute_merkle_root.zok
-zkRelay.egg-info
+cli.egg-info
