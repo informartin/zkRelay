@@ -15,6 +15,7 @@ def littleEndian(string):
     splited.reverse()
     return "".join(splited)
 
+  
 def getBitcoinClientURL(ctx):
     bc_client = ctx.obj['bitcoin_client']
     return 'http://{}:{}@{}:{}'.format(bc_client['user'], 
@@ -22,8 +23,10 @@ def getBitcoinClientURL(ctx):
                                         bc_client['host'], 
                                         bc_client['port'])
 
+  
 def getBlockHeadersInRange(ctx, i, j):
     rpc_connection = AuthServiceProxy(getBitcoinClientURL(ctx))
+
     commands = [["getblockhash", height] for height in range(i, j)]
     block_hashes = rpc_connection.batch_(commands)
     return block_hashes
