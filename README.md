@@ -16,7 +16,7 @@ Our cli requires you to use python version 3.
 Before you install the required dependencies, we recommend to set up a venv:
 
 ``` bash
-$ virtualenv venv
+$ python3 -m venv venv
 $ . venv/bin/activate
 ```
 
