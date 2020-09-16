@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='cli',
     version='0.1',
+    py_modules=['cli'],
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -16,6 +17,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        zkRelay=zkRelay_cli.cli:zkRelay_cli
+        zkRelay=cli:zkRelay_cli
     ''',
 )
