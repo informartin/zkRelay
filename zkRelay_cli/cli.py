@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import sys
 import subprocess
 import click
@@ -33,6 +34,9 @@ def generate_files(ctx, batch_size):
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_validation_code(batch_size), "validate.zok".format(i=batch_size))
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_root_code(batch_size), "compute_merkle_root.zok".format(i=batch_size))
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_merkle_proof_validation_code(batch_size), "verify_merkle_proof.zok".format(i=batch_size))
+    if not os.path.exists('mk_tree_validation'):
+        os.mkdir('mk_tree_validation')
+    os.rename("verify_merkle_proof.zok", "mk_tree_validation/verify_merkle_proof.zok")
     click.echo('Done.')
     # save batch_size in conf file for later use
     click.echo('Updating conf file...')
@@ -102,16 +106,30 @@ def validate(ctx, first_block_in_batch, multiple_batches, bc_host, bc_port, bc_u
                 required=False,
                 show_default='See conf/zkRelay-cli.toml', 
                 type=click.STRING)
-@click.argument('first_block_in_batch',
+@click.argument('block_no',
                 type=click.INT)
 @click.pass_context
-def create_input_merkle_root(ctx, first_block_in_batch, bc_host, bc_port, bc_user, bc_pwd):
+def create_merkle_proof(ctx, block_no, bc_host, bc_port, bc_user, bc_pwd):
     batch_size = int(ctx.obj['zokrates_file_generator']['batch_size'])
     ctx = processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd)
-    result = preprocessing.generateZokratesInputForMerkleProof(ctx, 
-                                                                first_block_in_batch, 
-                                                                batch_size)
-    click.echo('%s' % result)
+    first_block_in_batch = block_no - (block_no % batch_size) + 1
+    block_hashes = [preprocessing.littleEndian(header) for header in preprocessing.getBlockHeadersInRange(ctx, first_block_in_batch, first_block_in_batch + batch_size)]
+    target_header = block_hashes[block_no % batch_size]
+    tree = preprocessing.compute_full_merkle_tree(block_hashes)
+    zokrates_input = preprocessing.get_proof_input(tree, target_header)
+    try:
+        click.echo(colored('Exec "zokrates compute-witness --light"', 'cyan'))
+        subprocess.run('zokrates compute-witness --light -a ' + zokrates_input,
+                        check=True, shell=True, cwd="mk_tree_validation/")
+        click.echo(colored('Done!', 'green'))
+        click.echo(colored('Exec "zokrates generate-proof"', 'cyan'))
+        subprocess.run('zokrates generate-proof',
+                        check=True, shell=True, cwd="mk_tree_validation/")
+        click.echo(colored('Done!', 'green'))
+    except subprocess.CalledProcessError:
+        click.echo('Error while computing merkle treeinclusion proof')
+        click.echo(sys.exc_info()[0])
+    #click.echo('%s' % result)
 
 @zkRelay_cli.command(short_help='Generates proof validator')
 @click.pass_context
@@ -139,8 +157,29 @@ def setup(ctx):
                         check=True, shell=True)
         click.echo(colored('Done!', 'green'))
     except subprocess.CalledProcessError:
-        click.echo('Was not able to generate proof validator...')
+        click.echo('Error while generating proof validator')
         click.echo(sys.exc_info()[0])
+
+@zkRelay_cli.command(short_help='Generates merkle proof validator')
+@click.pass_context
+def setup_merkle_proof(ctx):
+    try:
+        click.echo(colored('Exec "zokrates compile --light -i verify_merkle_proof.zok"', 'cyan'))
+        subprocess.run('zokrates compile --light -i verify_merkle_proof.zok',
+                        check=True, shell=True, cwd="mk_tree_validation/")
+        click.echo(colored('Done!', 'green'))
+        click.echo(colored('Exec "zokrates setup --light"', 'cyan'))
+        subprocess.run('zokrates setup --light',
+                        check=True, shell=True, cwd="mk_tree_validation/")
+        click.echo(colored('Done!', 'green'))
+        click.echo(colored('Exec "zokrates export-verifier"', 'cyan'))
+        subprocess.run('zokrates export-verifier',
+                        check=True, shell=True, cwd="mk_tree_validation/")
+        click.echo(colored('Done!', 'green'))
+    except subprocess.CalledProcessError:
+        click.echo('Error while generating merkle proof validator')
+        click.echo(sys.exc_info()[0])    
+
 
 def processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd):
     # override defaults in conf file with parameters from command line
