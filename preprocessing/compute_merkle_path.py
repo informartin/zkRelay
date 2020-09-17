@@ -1,4 +1,5 @@
 from .create_input import hexToBinaryZokratesInput
+from .create_input import hexToDecimalZokratesInput
 
 def compute_merkle_path(tree, element):
     i = tree.index(element)
@@ -20,4 +21,4 @@ def compute_merkle_path(tree, element):
 
 def get_proof_input(tree, element):
     path = compute_merkle_path(tree, element)
-    return hexToBinaryZokratesInput(element) + ' ' + hexToBinaryZokratesInput(''.join(path[0])) + ' ' + ' '.join([str(element) for element in path[1]])
+    return ' '.join(hexToDecimalZokratesInput(element)) + ' ' + hexToBinaryZokratesInput(''.join(path[0])) + ' ' + ' '.join([str(element) for element in path[1]])

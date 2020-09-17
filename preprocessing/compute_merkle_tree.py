@@ -1,5 +1,5 @@
-from pycrypto.zokrates_pycrypto.gadgets.pedersenHasher import PedersenHasher
-from pycrypto.zokrates_pycrypto.babyjubjub import Point
+from .pycrypto.zokrates_pycrypto.gadgets.pedersenHasher import PedersenHasher
+from .pycrypto.zokrates_pycrypto.babyjubjub import Point
 import math
 
 def compute_merkle_tree(leafs):

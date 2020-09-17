@@ -42,7 +42,7 @@ def getBlocksInRange(ctx, i, j):
 def hexToDecimalZokratesInput(input):
     preimage = bytes.fromhex(input)
     bitarray = BitArray(bytes=preimage)
-    return [int(i, 2) for i in splitStringFromBack(bitarray.bin, 128)]
+    return [str(int(i, 2)) for i in splitStringFromBack(bitarray.bin, 128)]
 
 
 def hexToBinaryZokratesInput(input):
