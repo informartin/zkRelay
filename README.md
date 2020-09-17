@@ -7,7 +7,7 @@ The main branch of this repository includes an implementation that performs batc
 
 The workflow of zkRelay is seperated into three steps, ZoKrates code generation, a one-time compilation and setup step and many-time validation.
 
-As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed for both steps.
+As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed in version 0.5.1 for both steps.
 
 ## Setup zkRelay-CLI and env
 
