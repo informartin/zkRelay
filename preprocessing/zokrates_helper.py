@@ -7,6 +7,7 @@ from .create_input import generateZokratesInputForMerkleProof
 cmd_compute_witness = 'zokrates compute-witness --light -a '
 cmd_generate_proof = 'zokrates generate-proof'
 
+#TODO change BlockNo to BatchNr
 def validateBatchFromBlockNo(ctx, blockNo, batch_size):
     result = generateZokratesInputFromBlock(ctx, (blockNo-1)*batch_size+1, batch_size)
     os.system(cmd_compute_witness + result)

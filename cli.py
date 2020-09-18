@@ -39,6 +39,7 @@ def generate_files(ctx, batch_size):
     ctx.obj['zokrates_file_generator']['batch_size'] = batch_size
     fd = open('./conf/zkRelay-cli.toml', 'w')
     toml.dump(ctx.obj, fd)
+    fd.close()
     click.echo('Done.')
 
 @zkRelay_cli.command()
