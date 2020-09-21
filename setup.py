@@ -13,7 +13,8 @@ setup(
         'bitstring==3.1.5',
         'toml',
         'colorama',
-        'termcolor'
+        'termcolor',
+        'pytest_httpserver'
     ],
     entry_points='''
         [console_scripts]
