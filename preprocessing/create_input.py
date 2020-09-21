@@ -17,7 +17,7 @@ def littleEndian(string):
 
   
 def getBitcoinClientURL(ctx):
-    bc_client = ctx.get('obj')['bitcoin_client']
+    bc_client = ctx.obj['bitcoin_client']
     return 'http://{}:{}@{}:{}'.format(bc_client['user'], 
                                         bc_client['pwd'], 
                                         bc_client['host'], 
