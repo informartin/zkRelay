@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='cli',
+    name='zkRelay',
     version='0.1',
     py_modules=['cli'],
     packages=find_packages(),
@@ -14,7 +14,8 @@ setup(
         'toml',
         'colorama',
         'termcolor',
-        'pytest_httpserver'
+        'pytest_httpserver',
+        'zokrates_pycrypto'
     ],
     entry_points='''
         [console_scripts]

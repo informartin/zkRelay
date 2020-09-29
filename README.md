@@ -22,7 +22,7 @@ $ . venv/bin/activate
 
 To install the required python dependencies and setup the CLI, run:
 ``` bash
-$ pip3 install .
+$ pip3 install -r python-requirements
 ```
 
 Now, you can use the cli by executing (in the venv):

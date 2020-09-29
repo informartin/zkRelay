@@ -1,0 +1,4 @@
+--index-url https://pypi.python.org/simple/
+
+-e git+https://github.com/properfect12/pycrypto.git#egg=zokrates_pycrypto
+-e .
