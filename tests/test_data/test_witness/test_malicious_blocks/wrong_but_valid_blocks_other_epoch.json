@@ -1,0 +1,17 @@
+{
+    "http_responses": [[
+        { "result": "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048", "error": null},
+        { "result": "000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd", "error": null}
+    ],[
+        { "result": {"hash": "00000000fa26cfce2cdce6a5df7491f71cdfc8e75c61b6e26ecdd361ff052763", "confirmations": 647474, "strippedsize": 216, "size": 216, "weight": 864, "height": 2019, "version": 1, "versionHex": "00000001", "merkleroot": "af9873d29df492e031ce1121322ac591a81084568efe78cb3e410fde03e68d63", "tx": ["af9873d29df492e031ce1121322ac591a81084568efe78cb3e410fde03e68d63"], "time": 1233067200, "mediantime": 1233061610, "nonce": 193239592, "bits": "1d00ffff", "difficulty": 1, "chainwork": "000000000000000000000000000000000000000000000000000007e407e407e4", "nTx": 1, "previousblockhash": "00000000f42278032e65a8fc09a41fbbd1779421d166e59c205a37b6fdad1340", "nextblockhash": "00000000a2090ecd638c98afa5785d69eb9c84fbc1201f259f729a28190791d3"}, "error": null},
+        { "result": {"hash": "00000000a2090ecd638c98afa5785d69eb9c84fbc1201f259f729a28190791d3", "confirmations": 647473, "strippedsize": 216, "size": 216, "weight": 864, "height": 2020, "version": 1, "versionHex": "00000001", "merkleroot": "3c369dc993827cce3896b635b1f31273ff3bfa2bd28c16df6b04752b1a815642", "tx": ["3c369dc993827cce3896b635b1f31273ff3bfa2bd28c16df6b04752b1a815642"], "time": 1233067896, "mediantime": 1233061996, "nonce": 1445826362, "bits": "1d00ffff", "difficulty": 1, "chainwork": "000000000000000000000000000000000000000000000000000007e507e507e5", "nTx": 1, "previousblockhash": "00000000fa26cfce2cdce6a5df7491f71cdfc8e75c61b6e26ecdd361ff052763", "nextblockhash": "00000000cda6b0e6ebcfe7d45ad2d977f1b264f3fec58b41ecf53dba795b0d87"}, "error": null} 
+    ], [
+        { "result": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", "error": null}
+    ],[
+        { "result": {"hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", "confirmations": 649371, "strippedsize": 285, "size": 285, "weight": 1140, "height": 0, "version": 1, "versionHex": "00000001", "merkleroot": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b", "tx": ["4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"], "time": 1231006505, "mediantime": 1231006505, "nonce": 2083236893, "bits": "1d00ffff", "difficulty": 1, "chainwork": "0000000000000000000000000000000000000000000000000000000100010001", "nTx": 1, "nextblockhash": "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048"}, "error": null}
+    ],[
+        { "result": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", "error": null}
+    ],[
+        { "result": {"hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", "confirmations": 649371, "strippedsize": 285, "size": 285, "weight": 1140, "height": 0, "version": 1, "versionHex": "00000001", "merkleroot": "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b", "tx": ["4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"], "time": 1231006505, "mediantime": 1231006505, "nonce": 2083236893, "bits": "1d00ffff", "difficulty": 1, "chainwork": "0000000000000000000000000000000000000000000000000000000100010001", "nTx": 1, "nextblockhash": "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048"}, "error": null}
+    ]]   
+}
