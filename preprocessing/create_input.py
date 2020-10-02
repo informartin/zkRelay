@@ -62,7 +62,6 @@ def createZokratesInputFromBlock(block):
     little_endian_nonce = littleEndian(nonce)
 
     header = version + little_endian_previousHash + little_endian_merkleRoot + little_endian_time + little_endian_difficultyBits + little_endian_nonce
-
     return header
 
 

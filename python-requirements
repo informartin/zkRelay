@@ -1,2 +1,4 @@
-python-bitcoinrpc==1.0
-bitstring==3.1.5
+--index-url https://pypi.python.org/simple/
+
+git+https://github.com/Zokrates/pycrypto.git#egg=zokrates_pycrypto
+.
