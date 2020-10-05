@@ -32,7 +32,7 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         zkRelayConf = toml.load('./conf/zkRelay-cli.toml')
         if zkRelayConf['zokrates_file_generator']['batch_size'] is not BATCH_SIZE:
-            print('Setting up test environment...\n')
+            print('\nSetting up test environment...\n')
             subprocess.run('zkRelay generate-files {}'.format(BATCH_SIZE),
                         check=True, shell=True)
             subprocess.run('zkRelay setup',
@@ -41,20 +41,6 @@ class TestMaliciousBlocks(unittest.TestCase):
         
         self.ctx = Context()
         self.ctx.obj = toml.load('./tests/conf/local_conf.toml')
-
-    def test_malicious_block_hashes(self):
-        """
-            Valid return for getBlockHash
-            Malicious return for first getBlock (
-                    - wrong hash of first block in block sequence
-        """
-        self.exec_validate('malicious_block_hashes.json')
-        
-        # checking if output found error with help of regex
-        with open('./output/witness1', 'r') as witness:
-            lines = witness.readlines()
-            check = re.match('^~out_0 0$', lines[6])
-            self.assertIsNotNone(check, 'malicious block hashes of blocks in batch were accepted')
 
     def test_malicious_merkle_roots(self):
         """
@@ -69,6 +55,20 @@ class TestMaliciousBlocks(unittest.TestCase):
             lines = witness.readlines()
             check = re.match('^~out_0 0$', lines[6])
             self.assertIsNotNone(check, 'malicious merkle roots of blocks in batch were accepted')
+
+    def test_malicious_blocks_version_hex(self):
+        """
+            Valid return for getBlockHash
+            Malicious return for first getBlock 
+                - wrong merkle root for block sequence
+        """
+        self.exec_validate('malicious_blocks_version_hex.json')
+        
+        # checking if output found error with help of regex
+        with open('./output/witness1', 'r') as witness:
+            lines = witness.readlines()
+            check = re.match('^~out_0 0$', lines[6])
+            self.assertIsNotNone(check, 'malicious version hex of blocks in batch were accepted')
 
     def test_malicious_prev_block(self):
         """
@@ -88,7 +88,7 @@ class TestMaliciousBlocks(unittest.TestCase):
         """
             valid return for getBlockHash
             malicious return for getBlock
-                - wrong block hash for epoch block
+                - wrong block merkle root for epoch block
         """
         self.exec_validate('malicious_epoch_block.json')
         
@@ -96,100 +96,31 @@ class TestMaliciousBlocks(unittest.TestCase):
         with open('./output/witness1', 'r') as witness:
             lines = witness.readlines()
             check = re.match('^~out_0 0$', lines[6])
-            self.assertIsNotNone(check, 'malicious epoch block was accepted')
+            self.assertIsNotNone(check, 'malicious epoch block was accepted (wrong merkle root)')
 
-    def test_wrong_but_valid_epoch_block(self):
+    def test_epoch_block_non_sufficient_pow(self):
         """
-            returns valid getBlockHash
-            malicious return for getBlock 
-                - valid epoch_block from another epoch
-                - valid block sequence
+            testing epoch block with non_sufficient_pow
         """
-        self.exec_validate('wrong_but_valid_epoch_block.json')
+        self.exec_validate('epoch_block_non_sufficient_pow.json')
         
         # checking if output found error with help of regex
         with open('./output/witness1', 'r') as witness:
             lines = witness.readlines()
             check = re.match('^~out_0 0$', lines[6])
-            self.assertIsNotNone(check, 'wrong but valid epoch block was accepted')
+            self.assertIsNotNone(check, 'non sufficient pow of epoch block was accepted')
 
-    def test_wrong_but_valid_blocks(self):
+    def test_block_batch_non_sufficient_pow(self):
         """
-            returns valid getBlockHash
-            malicious return for getBlock 
-                - valid epoch_block
-                - valid block sequence but not requested ones
+            testing block batch with non_sufficient_pow
         """
-        self.exec_validate('wrong_but_valid_blocks.json')
+        self.exec_validate('block_batch_non_sufficient_pow.json')
         
         # checking if output found error with help of regex
         with open('./output/witness1', 'r') as witness:
             lines = witness.readlines()
             check = re.match('^~out_0 0$', lines[6])
-            self.assertIsNotNone(check, 'wrong but valid block sequence was accepted.')
-
-    def test_wrong_but_valid_blocks_and_prevBlock(self):
-        """
-            returns valid getBlockHash
-            malicious return for getBlock 
-                - valid epoch_block
-                - valid block sequence but not requested ones
-                - valid prevBlock to block sequence
-        """
-        self.exec_validate('wrong_but_valid_blocks_and_prevBlock.json')
-        
-        # checking if output found error with help of regex
-        with open('./output/witness1', 'r') as witness:
-            lines = witness.readlines()
-            check = re.match('^~out_0 0$', lines[6])
-            self.assertIsNotNone(check, 'wrong but valid block sequence and prevBlock were accepted.')
-
-    def test_wrong_but_valid_blocks_other_epoch(self):
-        """
-            returns valid getBlockHash
-            malicious return for getBlock 
-                - valid epoch_block
-                - valid block sequence from another epoch
-        """
-        self.exec_validate('wrong_but_valid_blocks_other_epoch.json')
-
-        # checking if output found error with help of regex
-        with open('./output/witness1', 'r') as witness:
-            lines = witness.readlines()
-            check = re.match('^~out_0 0$', lines[6])
-            self.assertIsNotNone(check, 'wrong but valid block batch from other epoch was accepted.')
-
-    def test_wrong_but_valid_epoch_block_and_blocks(self):
-        """
-            returns valid getBlockHash
-            malicious return for getBlock 
-                - valid epoch_block from another epoch
-                - valid block sequence from same epoch as epoch_block
-                - valid prev block
-        """
-        self.exec_validate('wrong_but_valid_epoch_block_and_blocks.json')
-        
-        # checking if output found error with help of regex
-        with open('./output/witness1', 'r') as witness:
-            lines = witness.readlines()
-            check = re.match('^~out_0 0$', lines[6])
-            self.assertIsNotNone(check, 'wrong but valid epoch block and block sequence were accepted')
-
-    def test_wrong_but_valid_epoch_block_and_blocks_and_prevBlock(self):
-        """
-            returns valid getBlockHash
-            malicious return for getBlock 
-                - valid epoch_block from another epoch
-                - valid block sequence from other epoch as epoch_block
-                - valid prevBlock to block sequence
-        """
-        self.exec_validate('wrong_but_valid_epoch_block_and_blocks_and_prevBlock.json')
-
-        # checking if output found error with help of regex
-        with open('./output/witness1', 'r') as witness:
-            lines = witness.readlines()
-            check = re.match('^~out_0 0$', lines[6])
-            self.assertIsNotNone(check, 'wrong but valid epoch block, block sequence and prevBlock were accepted')
+            self.assertIsNotNone(check, 'non sufficient pow of block batch was accepted')
 
     def exec_validate(self, http_conf_file):
         host = self.ctx.obj.get('bitcoin_client').get('host')
