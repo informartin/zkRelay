@@ -229,7 +229,8 @@ return [valid, ...r]
     field[2] target_is_valid = validate_target(first_block_epoch, intermediate_blocks[{n_enc_target}][4], final_block[4])
 
     field[2] merkle_root = compute_merkle_root([{blocks}])
+    field[2] final_block_hash = [pack128(block{n_final_block}[1..129]), pack128(block{n_final_block}[129..257])]
 
-return [result, target_is_valid[0], ...block{n_final_block}[1..3], target_is_valid[1], ...merkle_root]""".format(n_final_block=n_blocks, n_prev_block=n_blocks-1, n_enc_target=n_blocks-2, blocks=','.join(blocks)))
+return [result, target_is_valid[0], ...final_block_hash, target_is_valid[1], ...merkle_root]""".format(n_final_block=n_blocks, n_prev_block=n_blocks-1, n_enc_target=n_blocks-2, blocks=','.join(blocks)))
 
     return static_code + "\n".join(main_block)

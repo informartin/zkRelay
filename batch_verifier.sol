@@ -1,41 +1,56 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
 pragma solidity ^0.5.0;
 
 import "./verifier.sol" as zkVerifier;
+import "./mk_tree_validation/verifier.sol" as mkVerifier;
 
 contract BatchVerifier {
 
-    uint256 constant batchSize = 504;
-    uint256 constant epochSize = 2016;
-    uint256 constant batchesInEpoch = epochSize / batchSize;
+    uint256 constant BATCH_SIZE = 5;
+    uint256 constant EPOCH_SIZE = 2016;
+    uint256 constant BATCHES_IN_EPOCH = EPOCH_SIZE / BATCH_SIZE;
 
-    uint256[] cumDifficultyAtBatch;
-    uint256[] hashChain;
-    mapping(uint256 => uint256[5]) blockHeader;
-
-    zkVerifier.Verifier private verifier;
-
-    struct Challenge {
+    struct Batch {
+        uint256 headerHash; // Hash of last block header included in batch
+        uint256[5] blockHeader;
+        uint256 cumDifficulty;
+        uint256 merkleRoot;
+        mapping(uint256 => uint256[5]) intermediaryHeader;
+    }
+    
+    struct Branch {
         uint256 startingAtBatchHeight;
-        uint256[] _cumDifficultyAtBatch;
-        uint256[] _hashChain;
+        //Batch[] batchChain;
+        uint numBatchChain;
+        mapping (uint => Batch) batchChain;
     }
 
-    Challenge[] challenges;
+    // Not possible, as nested arrays in structs are not available in solidity versions > 0.7
+    //Branch[] hashChains;
+    uint numBranches;
+    mapping (uint => Branch) branches;
+
+    zkVerifier.Verifier private verifier;
+    mkVerifier.Verifier private mkTreeVerifier;
 
     constructor() public {
         // add Bitcoin genesis block (little endian)
-        hashChain.push(0x6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000);
-        blockHeader[0x6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000] = [
-        1329227995784915872903807060280344576,
-        0,
-        18457794364764902817207364670,
-        137526082704405043163852743835310340266,
-        99849781011907566316926179502243720060
-        ];
-        cumDifficultyAtBatch.push(0);
-        verifier = new zkVerifier.Verifier();
-    }
+        Branch storage mainChain = branches[numBranches++];
+        Batch storage batch = mainChain.batchChain[mainChain.numBatchChain++];
+        batch.headerHash = 0x6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000;
 
+        batch.blockHeader = [
+            1329227995784915872903807060280344576,
+            0,
+            18457794364764902817207364670,
+            137526082704405043163852743835310340266,
+            99849781011907566316926179502243720060
+        ];
+        verifier = new zkVerifier.Verifier();
+        mkTreeVerifier = new mkVerifier.Verifier();
+    }
+    
+    
     /**
      * Assignmet of Input array variables:
      * 0:       First block of the given epoch
@@ -45,26 +60,22 @@ contract BatchVerifier {
      * 9:       Target validity (boolean value indicating if the encoded target equals the computed target)
      * 10 - 11: Block hash of the last block in the given batch
      * 12:      Target value
+     * 13 - 14: Merkle root
      **/
     function submitBatch(
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[13] memory input
+        uint[15] memory input
     ) public returns (bool r) {
-        if(!verifyBatchCorrectness(a, b, c, input, hashChain, hashChain.length, 0))
-            return false;
+        require(verifyBatchCorrectness(a, b, c, input, 0, branches[0].numBatchChain, 0));
+        
+        Branch storage mainChain = branches[0];
+        Batch storage batch = mainChain.batchChain[mainChain.numBatchChain];
+        
+        createBatch(input, mainChain, batch);
 
-        uint256 blockHash = from128To256(input[10], input[11]);
-        hashChain.push(blockHash);
-        blockHeader[blockHash] = [input[3], input[4], input[5], input[6], input[7]];
-
-        cumDifficultyAtBatch.push(
-            cumDifficultyAtBatch[cumDifficultyAtBatch.length-1] +
-            difficultyFromTarget(input[12])
-        );
-
-        emit AddedNewBatchOfHeight((hashChain.length - 1) * batchSize);
+        emit AddedNewBatchOfHeight((branches[0].numBatchChain - 1) * BATCH_SIZE);
 
         return true;
     }
@@ -73,8 +84,8 @@ contract BatchVerifier {
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[13] memory input,
-        uint256[] memory sourceChain,
+        uint[15] memory input,
+        uint branchId,
         uint256 batchHeight,
         uint256 offset
     ) private returns (bool) {
@@ -88,32 +99,30 @@ contract BatchVerifier {
 
         // Verify reference to previous block
         uint prev_block_hash = from128To256(input[1], input[2]);
-        if(prev_block_hash != sourceChain[batchHeight - offset - 1])
+        if(prev_block_hash != branches[branchId].batchChain[batchHeight - offset - 1].headerHash)
             return false;
 
         // Every fourth batch submission, a new epoch begin
         // Verify if the target has been calculated correctly
-        if(((batchHeight % batchesInEpoch) == 0) && (input[9] != 1))
+        if(((batchHeight % BATCHES_IN_EPOCH) == 0) && (input[9] != 1))
             return false;
 
         // Verify that the correct first block of an epoch was given
         // Ensure accessing the correct chain , the fork or the main chain
-        uint index = sourceChain.length + 1; // just to be sure it is oout of bounds in case anything goes wrong
-        if(sourceChain.length < (batchHeight % batchesInEpoch) || sourceChain.length == hashChain.length) {
-            sourceChain = hashChain;
-            index = batchHeight - (batchHeight % batchesInEpoch);
+        uint index = branches[branchId].numBatchChain + 1; // just to be sure it is out of bounds in case anything goes wrong
+        if(branches[branchId].numBatchChain < (batchHeight % BATCHES_IN_EPOCH) || branches[branchId].numBatchChain == branches[0].numBatchChain) {
+            branchId = 0;
+            index = batchHeight - (batchHeight % BATCHES_IN_EPOCH);
+        } else {
+            batchHeight -= branches[branchId].numBatchChain;
+            index = BATCHES_IN_EPOCH * (((batchHeight - branches[branchId].numBatchChain) % BATCHES_IN_EPOCH) - (BATCHES_IN_EPOCH - (offset % BATCHES_IN_EPOCH)));
         }
-        else {
-            batchHeight -= sourceChain.length;
-            index = batchesInEpoch * (((batchHeight - sourceChain.length) % batchesInEpoch) - (batchesInEpoch - (offset % batchesInEpoch)));
-        }
-        // Adjust index to previous block if batch number % batchesInEpoch = 0
-        if(batchHeight % batchesInEpoch == 0)
-            index = index - batchesInEpoch;
+        // Adjust index to previous block if batch number % BATCHES_IN_EPOCH = 0
+        if(batchHeight % BATCHES_IN_EPOCH == 0)
+            index = index - BATCHES_IN_EPOCH;
         // To save gas costs, only the relevant fifth field element of the epoch head is passed as parameter
-        if(input[0] != blockHeader[sourceChain[index]][4])
+        if(input[0] != branches[branchId].batchChain[index].blockHeader[4])
             return false;
-
 
         return true;
     }
@@ -122,75 +131,98 @@ contract BatchVerifier {
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[13] memory input,
+        uint[15] memory input,
         uint batchHeight
-    ) public returns (int256 challengeId) {
+    ) public returns (uint256 challengeId) {
         // Verify batchHeight is correct
         uint prev_block_hash = from128To256(input[1], input[2]);
-        if(hashChain[batchHeight - 1] != hashChain[prev_block_hash])
-            return -1;
+        require(branches[0].batchChain[batchHeight - 1].headerHash == prev_block_hash);
 
-        if(!verifyBatchCorrectness(a, b, c, input, hashChain, batchHeight, 0))
-            return -1;
+        require(verifyBatchCorrectness(a, b, c, input, 0, batchHeight, 0));
 
-        uint256 difficulty = difficultyFromTarget(input[12]);
-        uint256 blockHash = from128To256(input[10], input[11]);
+        Branch storage challengeChain = branches[numBranches++];
+        Batch storage batch = challengeChain.batchChain[challengeChain.numBatchChain];
+        
+        createBatch(input, challengeChain, batch);
 
-        Challenge memory challenge = Challenge({
-            startingAtBatchHeight: batchHeight,
-            _cumDifficultyAtBatch: new uint256[](cumDifficultyAtBatch[batchHeight] + difficulty),
-            _hashChain: new uint256[](blockHash)
-            });
-
-        challenges.push(challenge);
-        challengeId = int(challenges.length - 1);
-        blockHeader[blockHash] = [input[3], input[4], input[5], input[6], input[7]];
-
-        emit AddedNewChallenge(challengeId);
+        emit AddedNewChallenge(numBranches);
+        
+        return numBranches;
     }
 
     function addBatchToChallenge(
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[13] memory input,
+        uint[15] memory input,
         uint256 challengeId
     ) public returns (bool) {
-        uint256 batchHeight = challenges[challengeId].startingAtBatchHeight + challenges[challengeId]._hashChain.length;
+        uint256 batchHeight = branches[challengeId].startingAtBatchHeight + branches[challengeId].numBatchChain;
 
-        if(!verifyBatchCorrectness(a, b, c, input, challenges[challengeId]._hashChain,batchHeight, challenges[challengeId].startingAtBatchHeight))
+        if(!verifyBatchCorrectness(a, b, c, input, challengeId ,batchHeight, branches[challengeId].startingAtBatchHeight))
             return false;
 
-        uint256 blockHash = from128To256(input[10], input[11]);
-        challenges[challengeId]._hashChain.push(blockHash);
-        blockHeader[blockHash] = [input[3], input[4], input[5], input[6], input[7]];
-        challenges[challengeId]._cumDifficultyAtBatch.push(
-            challenges[challengeId]._cumDifficultyAtBatch[challenges[challengeId]._cumDifficultyAtBatch.length-1] +
-            difficultyFromTarget(input[12])
-        );
+        Branch storage challengeChain = branches[numBranches];
+        Batch storage batch = challengeChain.batchChain[challengeChain.numBatchChain];
 
-        emit AddedNewBatchToChallenge(challengeId, challenges[challengeId]._hashChain.length);
+        createBatch(input, challengeChain, batch);
+
+        emit AddedNewBatchToChallenge(challengeId, branches[challengeId].numBatchChain);
 
         return true;
     }
 
     function settleChallenge(uint256 challengeId) public returns (bool) {
-        if(challenges[challengeId]._cumDifficultyAtBatch[challenges[challengeId]._cumDifficultyAtBatch.length - 1] <=
-            cumDifficultyAtBatch[cumDifficultyAtBatch.length - 1])
+        if(branches[challengeId].batchChain[branches[challengeId].numBatchChain - 1].cumDifficulty <= 
+            branches[0].batchChain[branches[challengeId].startingAtBatchHeight + branches[challengeId].numBatchChain].cumDifficulty)
             return false;
 
-        for(uint256 i = challenges[challengeId].startingAtBatchHeight; i < challenges[challengeId]._hashChain.length; i++) {
-            delete blockHeader[hashChain[i]];
-            hashChain[i] = challenges[challengeId]._hashChain[i - challenges[challengeId].startingAtBatchHeight];
-            cumDifficultyAtBatch[i] = challenges[challengeId]._cumDifficultyAtBatch[i - challenges[challengeId].startingAtBatchHeight];
+        Branch storage branch = branches[0];
+        for(uint256 i = branches[challengeId].startingAtBatchHeight; i < branches[challengeId].numBatchChain; i++) {
+            Batch storage batch = branch.batchChain[i];
+            batch = branches[challengeId].batchChain[i - branches[challengeId].startingAtBatchHeight];
+            delete branch.batchChain[i];
         }
 
-        delete challenges[challengeId];
+        delete branches[challengeId];
 
         emit SettledChallenge(challengeId);
 
         return true;
     }
+
+    function createBatch(uint[15] memory input, Branch storage mainChain, Batch storage batch) internal {
+        uint256 blockHash = from128To256(input[10], input[11]);
+        uint256 difficulty = difficultyFromTarget(input[12]);
+        uint256 merkleRoot = from128To256(input[13], input[14]);
+        
+        batch.headerHash = blockHash;
+        batch.cumDifficulty = branches[0].batchChain[branches[0].numBatchChain - 1].cumDifficulty + difficulty;
+        batch.merkleRoot = merkleRoot;
+        batch.blockHeader = [input[3], input[4], input[5], input[6], input[7]];
+        mainChain.numBatchChain++;
+    }
+    
+    /*
+    * Assignmet of Input array variables:
+    * 0 - 4: Block header
+    * 5 - 6: Block header hash
+    * 7 - 8: Computed Merkle Root
+    */
+    function submitIntermediaryBlock(
+        uint[2] memory a,
+        uint[2][2] memory b,
+        uint[2] memory c,
+        uint[9] memory input,
+        uint batchNo) public {
+            require(mkTreeVerifier.verifyTx(a, b, c, input));
+            
+            uint256 merkleRoot = from128To256(input[7], input[8]);
+            uint256 headerHash = from128To256(input[5], input[6]);
+            Batch storage batch = branches[0].batchChain[batchNo];
+            require(batch.merkleRoot == merkleRoot);
+            batch.intermediaryHeader[headerHash] = [input[0], input[1], input[2], input[3], input[4]];
+        }
 
     function difficultyFromTarget(uint256 target) private pure returns (uint256) {
         // 0x00000000FFFF00000000000000000000 is the smallest possible difficulty (cut to 128 bit from 256)
@@ -200,33 +232,31 @@ contract BatchVerifier {
     function from128To256(uint a, uint b) private pure returns (uint256) {
         return (a << 128) + b;
     }
-
-    function getBlockHashForBlockNumber(uint number) public view returns (uint256) {
-        return hashChain[number/batchSize];
+    
+    function getLatestBlockHash() public view returns (uint256) {
+        return branches[0].batchChain[branches[0].numBatchChain - 1].headerHash;
     }
-
-    function getBlockHeaderForHash(uint hash) public view returns (uint256[5] memory) {
-        return blockHeader[hash];
+    
+    // hash must be little endian!
+    function getBlockBlockHeader(uint256 number, uint256 hash) public view returns (uint256[5] memory header) {
+        Batch storage batch = branches[0].batchChain[number / BATCH_SIZE + 1];
+        if (number % BATCH_SIZE == 0)
+            return batch.blockHeader;
+        else
+            return batch.intermediaryHeader[hash];
     }
-
-    function getBlockHeaderForBlockNumber(uint number) public view returns (uint256[5] memory) {
-        getBlockHeaderForHash(getBlockHashForBlockNumber(number));
+    
+    function getMerkleRoot(uint batchNo) public view returns (uint256) {
+        return branches[0].batchChain[batchNo].merkleRoot;
     }
-
-    function getBatchChainLength() public view returns (uint256) {
-        return hashChain.length;
-    }
-
-    function getDifficultyAtBatch(uint256 number) public view returns (uint256) {
-        return cumDifficultyAtBatch[number];
-    }
-
+    
     function getSnarkVerifier() public view returns (address) {
         return address(verifier);
     }
 
+    event TestEvent(bool);
     event AddedNewBatchOfHeight(uint256);
-    event AddedNewChallenge(int256);
+    event AddedNewChallenge(uint256);
     event AddedNewBatchToChallenge(uint256, uint256);
     event SettledChallenge(uint256);
 }

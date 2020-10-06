@@ -115,9 +115,10 @@ def create_merkle_proof(ctx, block_no, bc_host, bc_port, bc_user, bc_pwd):
     ctx = processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd)
     first_block_in_batch = block_no - (block_no % batch_size) + 1
     block_hashes = [preprocessing.littleEndian(header) for header in preprocessing.getBlockHeadersInRange(ctx, first_block_in_batch, first_block_in_batch + batch_size)]
-    target_header = block_hashes[block_no % batch_size]
+    target_header_hash = block_hashes[(block_no - 1) % batch_size]
     tree = preprocessing.compute_full_merkle_tree(block_hashes)
-    zokrates_input = preprocessing.get_proof_input(tree, target_header)
+    header = preprocessing.createZokratesInputFromBlock(preprocessing.getBlocksInRange(ctx, block_no, block_no+1)[0])
+    zokrates_input = preprocessing.get_proof_input(tree, target_header_hash, header)
     try:
         click.echo(colored('Exec "zokrates compute-witness --light"', 'cyan'))
         subprocess.run('zokrates compute-witness --light -a ' + zokrates_input,
