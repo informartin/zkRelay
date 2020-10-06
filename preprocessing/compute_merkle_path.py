@@ -19,6 +19,6 @@ def compute_merkle_path(tree, element):
 
     return [path, direction]
 
-def get_proof_input(tree, element):
+def get_proof_input(tree, element, header):
     path = compute_merkle_path(tree, element)
-    return ' '.join(hexToDecimalZokratesInput(element)) + ' ' + hexToBinaryZokratesInput(''.join(path[0])) + ' ' + ' '.join([str(element) for element in path[1]])
+    return ' '.join(hexToDecimalZokratesInput(header)) + ' ' + hexToBinaryZokratesInput(''.join(path[0])) + ' ' + ' '.join([str(element) for element in path[1]])

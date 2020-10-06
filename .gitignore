@@ -16,6 +16,4 @@ validate.zok
 verify_merkle_proof.zok
 compute_merkle_root.zok
 zkRelay.egg-info
-conf/pw
-tests/conf/online_conf.toml
 .vscode

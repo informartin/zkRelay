@@ -2,8 +2,7 @@
 
 zkRelay facilitates a chain-relay from Bitcoin to Ethereum through zkSNARKS.
 
-The implementation is based on [ZoKrates](https://github.com/Zokrates/ZoKrates) and performs off-chain Bitcoin header chain validations, while only the resulting prrof is submitted to the target ledger.
-The main branch of this repository includes an implementation that performs batch validations for 63 Bitcoin blocks.
+The implementation is based on [ZoKrates](https://github.com/Zokrates/ZoKrates) and performs off-chain Bitcoin header chain validations, while only the resulting proof is submitted to the target ledger.
 
 The workflow of zkRelay is seperated into three steps, ZoKrates code generation, a one-time compilation and setup step and many-time validation.
 
