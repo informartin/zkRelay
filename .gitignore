@@ -9,3 +9,10 @@ proof.json
 output/proof*
 output/witness*
 .swp
+abi.json
+venv
+__pycache__
+validate.zok
+verify_merkle_proof.zok
+compute_merkle_root.zok
+zkRelay.egg-info
