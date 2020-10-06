@@ -130,7 +130,6 @@ def create_merkle_proof(ctx, block_no, bc_host, bc_port, bc_user, bc_pwd):
     except subprocess.CalledProcessError:
         click.echo('Error while computing merkle treeinclusion proof')
         click.echo(sys.exc_info()[0])
-    #click.echo('%s' % result)
 
 @zkRelay_cli.command(short_help='Generates proof validator')
 @click.pass_context
