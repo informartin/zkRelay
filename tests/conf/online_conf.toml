@@ -1,0 +1,7 @@
+title = "local test config file"
+
+[bitcoin_client]
+host = "localhost"
+port = "8333"
+user = "testUser"
+pwd = "testPwd"
