@@ -40,7 +40,7 @@ class TestWitnessCorrectBlocks(unittest.TestCase):
             self.assertIsNotNone(check, '2 blocks werent processed.')
 
 
-    def test_30_blocks(self):
+    def test_20_blocks(self):
         # check if required files are generated 
         zkRelayConf = toml.load('./conf/zkRelay-cli.toml')
         if zkRelayConf['zokrates_file_generator']['batch_size'] is not 20:
