@@ -1,4 +1,12 @@
 {
+    "http_requests": [
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [1], "id": 1}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [2], "id": 2}],
+        [{"jsonrpc": "2.0", "method": "getblock", "params": ["00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048"], "id": 3}, {"jsonrpc": "2.0", "method": "getblock", "params": ["000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd"], "id": 4}],
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [0], "id": 5}],
+        [{"jsonrpc": "2.0", "method": "getblock", "params": ["000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"], "id": 6}],
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [0], "id": 7}],
+        [{"jsonrpc": "2.0", "method": "getblock", "params": ["000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"], "id": 8}]
+    ],
     "http_responses": [[
         { "result": "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048", "error": null},
         { "result": "000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd", "error": null}
