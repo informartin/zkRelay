@@ -1,5 +1,8 @@
 title = "zkRelay-cli config file"
 
+[general]
+verbose = false
+
 [bitcoin_client]
 host = "localhost"
 port = "8332"
