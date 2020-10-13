@@ -26,7 +26,7 @@ class TestWitnessCorrectBlocks(unittest.TestCase):
         batch_no = 1
 
         # check if required files are generated
-        test_helper.setup_test_environment(batch_size)
+        test_helper.setup_test_environment(batch_size, batch_no)
 
         test_helper.exec_validate(self.ctx, '{}/start_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no)
         
@@ -40,7 +40,7 @@ class TestWitnessCorrectBlocks(unittest.TestCase):
         batch_no = 403
 
         # check if required files are generated
-        test_helper.setup_test_environment(batch_size)
+        test_helper.setup_test_environment(batch_size, batch_no)
 
         test_helper.exec_validate(self.ctx, '{}/end_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no)
         
