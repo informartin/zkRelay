@@ -14,10 +14,15 @@ def setup_test_environment(batch_size, batch_no, verbose=False):
     zkRelayConf = toml.load('./conf/zkRelay-cli.toml')
     if zkRelayConf['zokrates_file_generator']['batch_size'] is not batch_size:
         print('\nSetting up test environment...\n')
-        subprocess.run(['zkRelay', '-v', str(verbose), 'generate-files', str(batch_size)],
-                    check=True)
-        subprocess.run(['zkRelay', '-v', str(verbose), 'setup'],
-                    check=True)
+
+        command = ['zkRelay', 'generate-files', str(batch_size)]
+        if verbose is True: command.insert(1, '-v')
+        subprocess.run(command,check=True)
+
+        command = ['zkRelay', 'setup']
+        if verbose is True: command.insert(1, '-v')
+        subprocess.run(command,check=True)
+        
         print('\nDone.')
 
 """
@@ -34,7 +39,7 @@ def validateBatchFromBlockNo(ctx, blockNo, batch_size):
 def exec_validate(ctx, conf_file_path, batch_size, batch_no, verbose=False):
         host = ctx.obj.get('bitcoin_client').get('host')
         port = ctx.obj.get('bitcoin_client').get('port')
-        verbose_output = subprocess.DEVNULL if not verbose else subprocess.STDOUT
+        verbose_output = subprocess.DEVNULL if not verbose else None
 
         # get json config for test case
         fd = open(
@@ -47,6 +52,7 @@ def exec_validate(ctx, conf_file_path, batch_size, batch_no, verbose=False):
                 # setup http server expected requests and responses
                 request_count = len(config.get('http_responses'))
                 for curr_request in range(request_count):
+                    # TODO figure out how to overwrite request handler function
                     # expected_request_data = json.dumps(config.get('http_requests')[curr_request])\
                     #             if config.get('http_requests') is not None and not [] else None
                     expected_request_data = None
@@ -56,7 +62,6 @@ def exec_validate(ctx, conf_file_path, batch_size, batch_no, verbose=False):
                 # execute compute witness command from zokrates
                 # SEE THE NOTE AT TOP OF THE FUNCITON FOR ASSUMPTIONS
                 result = generateZokratesInputFromBlock(ctx, (batch_no-1)*batch_size+1, batch_size)
-
                 try:
                     command_list = ('zokrates compute-witness --light -a ' + result).split(' ')
                     subprocess.run(command_list, stdout=verbose_output, check=True)
@@ -68,3 +73,25 @@ def exec_validate(ctx, conf_file_path, batch_size, batch_no, verbose=False):
             print('There was probably a problem with the http server.')
             print(sys.exc_info())
             httpserver.check_assertions()
+
+def exec_proof(ctx, conf_file_path, block_nr):
+    host = ctx.obj.get('bitcoin_client').get('host')
+    port = ctx.obj.get('bitcoin_client').get('port')
+
+    # get json config for test case
+    fd = open(
+        './tests/test_data{}'.format(conf_file_path))
+    config = json.load(fd)
+    fd.close()
+
+    with HTTPServer(host=host, port=port) as httpserver:
+        for http_response in config.get('http_responses'):
+            httpserver.expect_ordered_request('/').respond_with_json(http_response)
+
+        # SEE THE NOTE AT THE START OF THE FILE FOR ASSUMPTIONS
+        #TODO make shell visible when verbose mode is on
+        try:
+            subprocess.run(['zkRelay', 'create-merkle-proof', str(block_nr)],
+                        check=True)
+        except subprocess.CalledProcessError:
+            return False
