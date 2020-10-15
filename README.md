@@ -8,7 +8,7 @@ The workflow of zkRelay is seperated into three steps, ZoKrates code generation,
 
 As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed in version 0.5.1 for both steps.
 
-## Setup zkRelay-CLI and env
+## Setup zkRelay-CLI
 
 Our cli requires you to use python version 3.
 
@@ -125,4 +125,47 @@ $ zkRelay create-merkle-proof n
 
 ``` bash
 $ zokrates print-proof --format [remix, json]
+```
+
+## Development Environment
+
+### Setup
+
+Before you install the required dependencies, we recommend to set up a venv:
+
+``` bash
+$ python3 -m venv venv
+$ . venv/bin/activate
+```
+
+To install the required python dependencies for development, run:
+``` bash
+$ pip3 install -r dev-python-requirements
+```
+
+This mainly installs additional packages that are needed for the test environment.
+Furthermore it sets the editable flag when installing. That way, source files are linked
+together and used for execution of the CLI. Changes in source files can therefor directly get tested
+and used without having to install zkRelay again.
+
+### Tests
+
+We use the unittest module for our test cases. You can execute all tests with the following command:
+
+``` bash
+$ python3 -m unittest
+```
+
+If you want to test specific test files or test cases you can do so by just calling them like packages.
+
+Lets say you want to test malicious input for the zkRelay command validate, then you would execute the following:
+
+``` bash
+$ python -m unittest tests.witness_tests.test_malicious_blocks.TestMaliciousBlocks
+```
+
+If you only want to test one test case, e.g. test_7_crossover_of_epochs, your command would like like the following:
+
+``` bash
+$ python -m unittest tests.witness_tests.test_malicious_blocks.TestMaliciousBlocks.test_7_crossover_of_epochs
 ```
