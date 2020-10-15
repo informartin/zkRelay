@@ -113,7 +113,7 @@ def validate(ctx, first_block_in_batch, multiple_batches, bc_host, bc_port, bc_u
 def create_merkle_proof(ctx, block_no, bc_host, bc_port, bc_user, bc_pwd):
     batch_size = int(ctx.obj['zokrates_file_generator']['batch_size'])
     ctx = processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd)
-    first_block_in_batch = block_no - (block_no % batch_size) + 1
+    first_block_in_batch = block_no - ((block_no - 1) % batch_size)
     block_hashes = [preprocessing.littleEndian(header) for header in preprocessing.getBlockHeadersInRange(ctx, first_block_in_batch, first_block_in_batch + batch_size)]
     target_header_hash = block_hashes[(block_no - 1) % batch_size]
     tree = preprocessing.compute_full_merkle_tree(block_hashes)
