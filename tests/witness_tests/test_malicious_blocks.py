@@ -71,23 +71,6 @@ class TestMaliciousBlocks(unittest.TestCase):
             check = re.match('^~out_0 0$', lines[6])
             self.assertIsNotNone(check, 'malicious prevBlock was accepted')
 
-    def test_4_malicious_epoch_block(self):
-        """
-            valid return for getBlockHash
-            malicious return for getBlock
-                - wrong block merkle root for epoch block
-        """
-        # check if required files are generated 
-        test_helper.setup_test_environment(BATCH_SIZE, BATCH_NO)
-
-        test_helper.exec_validate(self.ctx, '{}/malicious_epoch_block.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
-        
-        # checking if output found error with help of regex
-        with open('./output/witness1', 'r') as witness:
-            lines = witness.readlines()
-            check = re.match('^~out_0 0$', lines[6])
-            self.assertIsNotNone(check, 'malicious epoch block was accepted (wrong merkle root)')
-
     def test_5_epoch_block_non_sufficient_pow(self):
         """
             testing epoch block with non_sufficient_pow
@@ -119,6 +102,9 @@ class TestMaliciousBlocks(unittest.TestCase):
             self.assertIsNotNone(check, 'non sufficient pow of block batch was accepted')
 
     def test_7_crossover_of_epochs(self):
+        """
+            testing block batch that overlaps an epoch
+        """
         batch_size = 5
         batch_no = 99994
 
