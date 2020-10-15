@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import click
+import copy
 import generate_zokrates_files as zokrates_file_generator
 import preprocessing
 import toml
@@ -17,14 +18,21 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.option('-v', '--verbose',
                 is_flag=True,
                 help='verbose output')
+@click.option('-c',
+                '--config-file',
+                help='path to config file',
+                required=False,
+                type=click.STRING)
 @click.pass_context
-def zkRelay_cli(ctx, verbose):
+def zkRelay_cli(ctx, verbose, config_file):
     """
     For more information about a command
     use 'cli COMMAND [-h, --help]'
     """
     # load conf file to pass to cmds
-    ctx.obj = toml.load('./conf/zkRelay-cli.toml')
+    config_file_path = config_file if config_file is not None else './conf/zkRelay-cli.toml'
+    ctx.obj = toml.load(config_file_path)
+    ctx.obj['general']['config_file_path'] = config_file_path
     if verbose is not False:
         ctx.obj['general']['verbose'] = verbose
 
@@ -43,12 +51,8 @@ def generate_files(ctx, batch_size):
     os.rename("verify_merkle_proof.zok", "mk_tree_validation/verify_merkle_proof.zok")
     click.echo('Done.')
     # save batch_size in conf file for later use
-    click.echo('Updating conf file...')
     ctx.obj['zokrates_file_generator']['batch_size'] = batch_size
-    fd = open('./conf/zkRelay-cli.toml', 'w')
-    toml.dump(ctx.obj, fd)
-    fd.close()
-    click.echo('Done.')
+    save_conf_file(ctx)
 
 @zkRelay_cli.command()
 @click.option('-m', '--multiple_batches',
@@ -80,7 +84,7 @@ def validate(ctx, batch_no, multiple_batches, bc_host, bc_port, bc_user, bc_pwd)
         ctx = processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd)
     except:
         click.echo(colored('Error, cannot validate.', 'red'))
-        click.echo(colored('Missing argument: ', 'red') + 'bc-host, bc-port, bc-user or bc-pwd not set in config file located at ./conf/zkRelay-cli.toml.')
+        click.echo(colored('Missing argument: ', 'red') + 'bc-host, bc-port, bc-user or bc-pwd not set in config file located at {}.'.format(ctx.obj['general']['config_file_path']))
         return
 
     if multiple_batches is not None:
@@ -121,10 +125,10 @@ def create_merkle_proof(ctx, block_no, bc_host, bc_port, bc_user, bc_pwd):
         ctx = processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd)
     except:
         click.echo(colored('Error, cannot validate.', 'red'))
-        click.echo(colored('Missing argument: ', 'red') + 'bc-host, bc-port, bc-user or bc-pwd not set in config file located at ./conf/zkRelay-cli.toml.')
+        click.echo(colored('Missing argument: ', 'red') + 'bc-host, bc-port, bc-user or bc-pwd not set in config file located at {}.'.format(ctx.obj['general']['config_file_path']))
         return
     # input()
-    first_block_in_batch = block_no - (block_no % batch_size) + 1
+    first_block_in_batch = block_no - ((block_no -1) % batch_size)
     block_hashes = [preprocessing.littleEndian(header) for header in preprocessing.getBlockHeadersInRange(ctx, first_block_in_batch, first_block_in_batch + batch_size)]
     target_header_hash = block_hashes[(block_no - 1) % batch_size]
     tree = preprocessing.compute_full_merkle_tree(block_hashes)
@@ -213,3 +217,15 @@ def processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd):
     if ctx.obj['bitcoin_client']['pwd'] is None:
         raise Exception
     return ctx
+
+def save_conf_file(ctx):
+    click.echo('Updating conf file...')
+    fd = open(ctx.obj['general']['config_file_path'], 'w')
+
+    # deleting config file path because its not necessary to know
+    conf = copy.deepcopy(ctx.obj)
+    del conf['general']['config_file_path']
+    toml.dump(conf, fd)
+
+    fd.close()
+    click.echo('Done.')
