@@ -16,10 +16,12 @@ def setup_test_environment(batch_size, batch_no, verbose=False):
         print('\nSetting up test environment...\n')
 
         command = ['zkRelay', 'generate-files', str(batch_size)]
+        # output only if output is required
         if verbose is True: command.insert(1, '-v')
         subprocess.run(command,check=True)
 
         command = ['zkRelay', 'setup']
+        # output only if output is required
         if verbose is True: command.insert(1, '-v')
         subprocess.run(command,check=True)
         
@@ -74,9 +76,10 @@ def exec_validate(ctx, conf_file_path, batch_size, batch_no, verbose=False):
             print(sys.exc_info())
             httpserver.check_assertions()
 
-def exec_proof(ctx, conf_file_path, block_nr):
+def exec_proof(ctx, conf_file_path, block_nr, verbose=False):
     host = ctx.obj.get('bitcoin_client').get('host')
     port = ctx.obj.get('bitcoin_client').get('port')
+    verbose_output = subprocess.DEVNULL if not verbose else None
 
     # get json config for test case
     fd = open(
@@ -91,7 +94,10 @@ def exec_proof(ctx, conf_file_path, block_nr):
         # SEE THE NOTE AT THE START OF THE FILE FOR ASSUMPTIONS
         #TODO make shell visible when verbose mode is on
         try:
-            subprocess.run(['zkRelay', 'create-merkle-proof', str(block_nr)],
-                        check=True)
+            subprocess.run(['zkRelay', '-c', './tests/conf/local_conf.toml', 'create-merkle-proof', str(block_nr)],
+                        check=True, stdout=verbose_output)
         except subprocess.CalledProcessError:
             return False
+
+def get_first_block_in_batch(batch_no, batch_size):
+    return (batch_no - 1) * batch_size + 1
