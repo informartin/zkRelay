@@ -33,8 +33,14 @@ def zkRelay_cli(ctx, verbose, config_file):
     config_file_path = config_file if config_file is not None else './conf/zkRelay-cli.toml'
     ctx.obj = toml.load(config_file_path)
     ctx.obj['general']['config_file_path'] = config_file_path
-    if verbose is not False:
-        ctx.obj['general']['verbose'] = verbose
+
+    # check if verbose output is required
+    if ctx.obj['general']['verbose'] or verbose:
+        ctx.obj['general']['verbose_output'] = None
+        ctx.obj['general']['verbose'] = True
+    else:
+        ctx.obj['general']['verbose_output'] = subprocess.DEVNULL
+        ctx.obj['general']['verbose'] = False
 
 @zkRelay_cli.command('generate-files')
 @click.argument('batch_size',
@@ -42,14 +48,16 @@ def zkRelay_cli(ctx, verbose, config_file):
                 type=click.INT)
 @click.pass_context
 def generate_files(ctx, batch_size):
-    click.echo('Generating...')
+    click.echo(colored('Generating...', 'cyan'))
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_validation_code(batch_size), "validate.zok".format(i=batch_size))
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_root_code(batch_size), "compute_merkle_root.zok".format(i=batch_size))
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_merkle_proof_validation_code(batch_size), "verify_merkle_proof.zok".format(i=batch_size))
+    
     if not os.path.exists('mk_tree_validation'):
         os.mkdir('mk_tree_validation')
     os.rename("verify_merkle_proof.zok", "mk_tree_validation/verify_merkle_proof.zok")
-    click.echo('Done.')
+    click.echo(colored('Done.', 'green'))
+
     # save batch_size in conf file for later use
     ctx.obj['zokrates_file_generator']['batch_size'] = batch_size
     save_conf_file(ctx)
@@ -80,6 +88,8 @@ def generate_files(ctx, batch_size):
 @click.pass_context
 def validate(ctx, batch_no, multiple_batches, bc_host, bc_port, bc_user, bc_pwd):
     batch_size = int(ctx.obj['zokrates_file_generator']['batch_size'])
+    verbose_output = ctx.obj['general']['verbose_output']
+
     try:
         ctx = processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd)
     except:
@@ -91,11 +101,13 @@ def validate(ctx, batch_no, multiple_batches, bc_host, bc_port, bc_user, bc_pwd)
         preprocessing.validateBatchesFromBlockNo(ctx,
                                                     batch_no,
                                                     multiple_batches, 
-                                                    batch_size)
+                                                    batch_size,
+                                                    verbose_output)
     else:
         preprocessing.validateBatchFromBlockNo(ctx,
                                                 batch_no, 
-                                                batch_size)
+                                                batch_size,
+                                                verbose_output)
 
 @zkRelay_cli.command()
 @click.option('-bch', '--bc-host',
@@ -118,7 +130,7 @@ def validate(ctx, batch_no, multiple_batches, bc_host, bc_port, bc_user, bc_pwd)
                 type=click.INT)
 @click.pass_context
 def create_merkle_proof(ctx, block_no, bc_host, bc_port, bc_user, bc_pwd):
-    verbose_output = subprocess.DEVNULL if ctx.obj['general']['verbose'] is False else None
+    verbose_output = ctx.obj['general']['verbose_output']
     batch_size = int(ctx.obj['zokrates_file_generator']['batch_size'])
 
     try:
@@ -128,18 +140,22 @@ def create_merkle_proof(ctx, block_no, bc_host, bc_port, bc_user, bc_pwd):
         click.echo(colored('Missing argument: ', 'red') + 'bc-host, bc-port, bc-user or bc-pwd not set in config file located at {}.'.format(ctx.obj['general']['config_file_path']))
         return
     # input()
+    click.echo(colored('Getting block information and generating zokrates input...', 'cyan'))
     first_block_in_batch = block_no - ((block_no -1) % batch_size)
     block_hashes = [preprocessing.littleEndian(header) for header in preprocessing.getBlockHeadersInRange(ctx, first_block_in_batch, first_block_in_batch + batch_size)]
     target_header_hash = block_hashes[(block_no - 1) % batch_size]
     tree = preprocessing.compute_full_merkle_tree(block_hashes)
     header = preprocessing.createZokratesInputFromBlock(preprocessing.getBlocksInRange(ctx, block_no, block_no+1)[0])
     zokrates_input = preprocessing.get_proof_input(tree, target_header_hash, header)
+    print(colored('Done!', 'green'))
+
     try:
         click.echo(colored('Exec "zokrates compute-witness --light"', 'cyan'))
         command = ['zokrates', 'compute-witness', '--light', '-a']
         command += zokrates_input.split(' ')
         subprocess.run(command, check=True, cwd="mk_tree_validation/", stdout=verbose_output)
         click.echo(colored('Done!', 'green'))
+
         click.echo(colored('Exec "zokrates generate-proof"', 'cyan'))
         subprocess.run(['zokrates', 'generate-proof'], stdout=verbose_output,
                         check=True, cwd="mk_tree_validation/")
@@ -160,7 +176,8 @@ def setup(ctx):
 
     3. generate smart contract that validates proofs
     """
-    verbose_output = subprocess.DEVNULL if not ctx.obj['general']['verbose'] else None
+    verbose_output = ctx.obj['general']['verbose_output']
+
     try:
         click.echo(colored('Exec "zokrates compile --light -i validate.zok"', 'cyan'))
         subprocess.run(['zokrates', 'compile', '--light', '-i', 'validate.zok'], stdout=verbose_output,
@@ -181,7 +198,8 @@ def setup(ctx):
 @zkRelay_cli.command(short_help='Generates merkle proof validator')
 @click.pass_context
 def setup_merkle_proof(ctx):
-    verbose_output = subprocess.DEVNULL if not ctx.obj['general']['verbose'] else None
+    verbose_output = ctx.obj['general']['verbose_output']
+
     try:
         click.echo(colored('Exec "zokrates compile --light -i verify_merkle_proof.zok"', 'cyan'))
         subprocess.run(['zokrates', 'compile', '--light', '-i', 'verify_merkle_proof.zok'], stdout=verbose_output,
@@ -219,13 +237,14 @@ def processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd):
     return ctx
 
 def save_conf_file(ctx):
-    click.echo('Updating conf file...')
+    click.echo(colored('Updating conf file...', 'cyan'))
     fd = open(ctx.obj['general']['config_file_path'], 'w')
 
     # deleting config file path because its not necessary to know
     conf = copy.deepcopy(ctx.obj)
     del conf['general']['config_file_path']
+    del conf['general']['verbose_output']
     toml.dump(conf, fd)
 
     fd.close()
-    click.echo('Done.')
+    click.echo(colored('Done!', 'green'))
