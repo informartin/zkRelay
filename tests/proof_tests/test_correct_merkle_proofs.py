@@ -14,7 +14,7 @@ from tests import test_helper
 class Context:
     obj = {}
 
-class TestProofCorrectBlocks(unittest.TestCase):
+class TestCorrectMerkleProofs(unittest.TestCase):
     verbose = False
 
     def setUp(self):
