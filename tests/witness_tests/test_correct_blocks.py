@@ -26,7 +26,7 @@ class TestWitnessCorrectBlocks(unittest.TestCase):
         batch_no = 1
 
         # check if required files are generated
-        test_helper.setup_test_environment(batch_size, batch_no)
+        test_helper.setup_validate_test_environment(batch_size, batch_no)
 
         test_helper.exec_validate(self.ctx, '{}/start_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no)
         
@@ -40,7 +40,7 @@ class TestWitnessCorrectBlocks(unittest.TestCase):
         batch_no = 403
 
         # check if required files are generated
-        test_helper.setup_test_environment(batch_size, batch_no)
+        test_helper.setup_validate_test_environment(batch_size, batch_no)
 
         test_helper.exec_validate(self.ctx, '{}/end_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no)
         
@@ -48,22 +48,3 @@ class TestWitnessCorrectBlocks(unittest.TestCase):
             lines = witness.readlines()
             check = re.match('^~out_0 1$', lines[6])
             self.assertIsNotNone(check, '{} blocks right at end of epoch werent processed correctly.'.format(batch_size))
-
-
-    # def test_3_20_blocks(self):
-    #     # check if required files are generated 
-    #     zkRelayConf = toml.load('./conf/zkRelay-cli.toml')
-    #     if zkRelayConf['zokrates_file_generator']['batch_size'] is not 20:
-    #         print('\nSetting up test environment...\n')
-    #         subprocess.run('zkRelay generate-files {}'.format(20),
-    #                     check=True, shell=True)
-    #         subprocess.run('zkRelay setup',
-    #                     check=True, shell=True)
-    #         print('\nDone.')
-
-    #     self.exec_validate('20_blocks.json', batch_size=20, batch_no=1)
-        
-    #     with open('./output/witness{}'.format(1), 'r') as witness:
-    #         lines = witness.readlines()
-    #         check = re.match('^~out_0 1$', lines[6])
-    #         self.assertIsNotNone(check, '20 blocks werent processed.')

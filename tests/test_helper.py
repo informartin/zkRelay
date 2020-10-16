@@ -6,26 +6,34 @@ from pytest_httpserver import HTTPServer
 from preprocessing.create_input import generateZokratesInputFromBlock
 from preprocessing.create_input import generateZokratesInputForMerkleProof
 
-def setup_test_environment(batch_size, batch_no, verbose=False):
+def setup_validate_test_environment(batch_size, batch_no, verbose=False):
     # rm output files from earlier tests
-    subprocess.run(['rm', 'output/witness{}'.format(batch_no)], check=False)
+    verbose_output = subprocess.DEVNULL if verbose is False else None
+    subprocess.run(['rm', 'output/witness{}'.format(batch_no)], check=False, stdout=verbose_output)
 
     # check if correct files are already generated and zkRelay setup executed
-    zkRelayConf = toml.load('./conf/zkRelay-cli.toml')
-    if zkRelayConf['zokrates_file_generator']['batch_size'] is not batch_size:
-        print('\nSetting up test environment...\n')
+    # zkRelayConf = toml.load('./conf/zkRelay-cli.toml')
+    # if zkRelayConf['zokrates_file_generator']['batch_size'] is not batch_size:
+    print('\nSetting up test environment...')
 
-        command = ['zkRelay', 'generate-files', str(batch_size)]
-        # output only if output is required
-        if verbose is True: command.insert(1, '-v')
-        subprocess.run(command,check=True)
+    command = ['zkRelay', '-c', './tests/conf/local_conf.toml', 'generate-files', str(batch_size)]
+    # output only if output is required
+    if verbose is True: command.insert(1, '-v')
+    subprocess.run(command,check=True)
 
-        command = ['zkRelay', 'setup']
-        # output only if output is required
-        if verbose is True: command.insert(1, '-v')
-        subprocess.run(command,check=True)
-        
-        print('\nDone.')
+    command = ['zkRelay', '-c', './tests/conf/local_conf.toml', 'setup']
+    # output only if output is required
+    if verbose is True: command.insert(1, '-v')
+    subprocess.run(command,check=True)
+    
+    print('Done.')
+
+def setup_merkle_proof_test_environment(batch_size, batch_no, verbose=False):
+    print('\nSetting up merkle proof environment...')
+    setup_validate_test_environment(batch_size, batch_no, verbose)
+    subprocess.run(['zkRelay', 'setup-merkle-proof'],
+                check=True, stdout=subprocess.DEVNULL)
+    print('Done.')
 
 """
 This function assumes that the cmd 'zkRelay validate' will execute 
