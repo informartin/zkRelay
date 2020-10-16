@@ -1,0 +1,59 @@
+{
+    "http_requests": [
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [1], "id": 1}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [2], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [3], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [4], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [5], "id": 2}],
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [1], "id": 3}],
+        [{"jsonrpc": "2.0", "method": "getblock", "params": ["00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048"], "id": 4}]
+    ],
+    "http_responses": [[
+        {
+            "error": null,
+            "result": "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048"
+        },
+        {
+            "error": null,
+            "result": "000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd"
+        },
+        {
+            "error": null,
+            "result": "0000000082b5015589a3fdf2d4baff403e6f0be035a5d9742c1cae6295464449"
+        },
+        {
+            "error": null,
+            "result": "000000004ebadb55ee9096c9a2f8880e09da59c0d68b1c228da88e48844a1485"
+        },
+        {
+            "error": null,
+            "result": "000000009b7262315dbf071787ad3656097b892abffd1f95a1a022f896f533fc"
+        }
+    ], [
+        {
+            "error": null,
+            "result": "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048"
+        }
+    ], [
+        {
+            "error": null,
+            "result": {
+                "bits": "1d00ffff",
+                "chainwork": "0000000000000000000000000000000000000000000000000000000200020002",
+                "confirmations": 652861,
+                "difficulty": 1.0,
+                "hash": "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048",
+                "height": 1,
+                "mediantime": 1231469665,
+                "merkleroot": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098",
+                "nTx": 1,
+                "nextblockhash": "000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd",
+                "nonce": 2573394689,
+                "previousblockhash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+                "size": 215,
+                "strippedsize": 215,
+                "time": 1231469665,
+                "tx": [],
+                "version": 1,
+                "versionHex": "00000001",
+                "weight": 860
+            }
+        }
+    ]]  
+}
