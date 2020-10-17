@@ -24,18 +24,18 @@ def setup_validate_test_environment(batch_size, batch_no, verbose=False):
     current_setup_batch_size = check_zkRelay_setup_batch_size(batch_size)
 
     # check if correct files are already generated and zkRelay setup executed
-    if current_setup_batch_size:
+    if current_setup_batch_size is not batch_size:
         print('\nSetting up test environment...')
 
         command = ['zkRelay', '-c', './tests/conf/local_conf.toml', 'generate-files', str(batch_size)]
         # output only if output is required
         if verbose is True: command.insert(1, '-v')
-        subprocess.run(command,check=True,output=verbose_output)
+        subprocess.run(command,check=True,stdout=verbose_output)
 
         command = ['zkRelay', '-c', './tests/conf/local_conf.toml', 'setup']
         # output only if output is required
         if verbose is True: command.insert(1, '-v')
-        subprocess.run(command,check=True,output=verbose_output)
+        subprocess.run(command,check=True,stdout=verbose_output)
         
         print('Done.')
 
@@ -130,16 +130,20 @@ def check_zkRelay_setup_batch_size(batch_size):
     general_zkRelayConf = toml.load(general_zkRelayConf_file_path)
     test_zkRelayConf = toml.load(test_zkRelayConf_files_path)
 
+    current_batch_size = general_zkRelayConf['zokrates_file_generator']['batch_size']
+
     if general_zkRelayConf['zokrates_file_generator']['batch_size'] is not batch_size:
-        # updating batch_size in general_zkRelayConf
-        test_zkRelayConf['zokrates_file_generator']['batch_size'] = general_zkRelayConf['zokrates_file_generator']['batch_size']
-
         general_zkRelayConf['zokrates_file_generator']['batch_size'] = batch_size
-        general_zkRelayConf['general']['config_file_path'] = general_zkRelayConf_file_path
-        general_zkRelayConf['general']['verbose_output'] = None
-        ctx = Context()
-        ctx.obj = general_zkRelayConf
-
-        save_conf_file(ctx)
+        update_conf_file(general_zkRelayConf, general_zkRelayConf_file_path, batch_size)
+    elif test_zkRelayConf['zokrates_file_generator']['batch_size'] is not batch_size:
+        test_zkRelayConf['zokrates_file_generator']['batch_size'] = batch_size
+        update_conf_file(general_zkRelayConf, general_zkRelayConf_file_path, batch_size)
     
-    return test_zkRelayConf['zokrates_file_generator']['batch_size']
+    return current_batch_size
+
+def update_conf_file(conf_obj, file_path, batch_size):
+    conf_obj['general']['config_file_path'] = file_path
+    conf_obj['general']['verbose_output'] = None
+    ctx = Context()
+    ctx.obj = conf_obj
+    save_conf_file(ctx)
