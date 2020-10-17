@@ -68,3 +68,29 @@ class TestCorrectMerkleProofs(unittest.TestCase):
                 
                 self.assertEqual(lines[1].rstrip(), '~out_2 30029047865384282741416230607321619582', 
                         'inclusion prove for block nr {} in merkle tree of {} blocks was not successful.'.format(block_nr, batch_size))
+
+    def test_batch_size_10(self):
+        """
+            testing all blocks of batch size 10
+        """
+        batch_size = 10
+        batch_no = 1
+        first_block_in_batch = test_helper.get_first_block_in_batch(batch_no, batch_size)
+        block_range = test_helper.get_first_block_in_batch(batch_no + 1, batch_size)
+
+        # check if required files are generated 
+        test_helper.setup_merkle_proof_test_environment(batch_size, batch_no, self.verbose)
+
+        for block_nr in range(first_block_in_batch, block_range):
+            counter = (block_nr - 1) % batch_size
+            
+            test_helper.exec_proof(self.ctx, f'/test_proof/test_correct_proofs/batch_size_10_nr_{counter}.json', block_nr)
+            
+            with open('./mk_tree_validation/witness', 'r') as witness:
+                lines = witness.readlines()
+
+                self.assertEqual(lines[0].rstrip(), '~out_3 16337350273637649591439682102568762216', 
+                        f'inclusion prove for block nr {block_nr} in merkle tree of {batch_size} blocks was not successful.')
+                
+                self.assertEqual(lines[1].rstrip(), '~out_2 11202167189876744263973656195464312346', 
+                        f'inclusion prove for block nr {block_nr} in merkle tree of {batch_size} blocks was not successful.')
