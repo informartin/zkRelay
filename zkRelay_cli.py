@@ -240,7 +240,7 @@ def save_conf_file(ctx):
     click.echo(colored('Updating conf file...', 'cyan'))
     fd = open(ctx.obj['general']['config_file_path'], 'w')
 
-    # deleting config file path because its not necessary to know
+    # deleting unnecessary entries
     conf = copy.deepcopy(ctx.obj)
     del conf['general']['config_file_path']
     del conf['general']['verbose_output']
