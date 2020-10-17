@@ -10,15 +10,11 @@ from preprocessing.create_input import generateZokratesInputForMerkleProof
 import sys
 from tests import test_helper
 
-# Mock Click.Context object that is normally passed through cli to functions 
-class Context:
-    obj = {}
-
 class TestWitnessCorrectBlocks(unittest.TestCase):
     conf_dir_path = '/test_witness/test_correct_blocks'
 
     def setUp(self):
-        self.ctx = Context()
+        self.ctx = test_helper.Context()
         self.ctx.obj = toml.load('./tests/conf/local_conf.toml')
 
     def test_1_start_of_epoch(self):

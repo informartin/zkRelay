@@ -5,34 +5,50 @@ import toml
 from pytest_httpserver import HTTPServer
 from preprocessing.create_input import generateZokratesInputFromBlock
 from preprocessing.create_input import generateZokratesInputForMerkleProof
+from zkRelay_cli import save_conf_file
+
+general_zkRelayConf_file_path = './conf/zkRelay-cli.toml'
+test_zkRelayConf_files_path = './tests/conf/local_conf.toml'
+
+# Mock Click.Context object that is normally passed through cli to functions 
+class Context:
+    obj = {}
 
 def setup_validate_test_environment(batch_size, batch_no, verbose=False):
     # rm output files from earlier tests
     verbose_output = subprocess.DEVNULL if verbose is False else None
     subprocess.run(['rm', 'output/witness{}'.format(batch_no)], check=False, stdout=verbose_output)
 
+    # normal conf has to be checked to see if the user did another batch size
+    # before the first test
+    current_setup_batch_size = check_zkRelay_setup_batch_size(batch_size)
+
     # check if correct files are already generated and zkRelay setup executed
-    # zkRelayConf = toml.load('./conf/zkRelay-cli.toml')
-    # if zkRelayConf['zokrates_file_generator']['batch_size'] is not batch_size:
-    print('\nSetting up test environment...')
+    if current_setup_batch_size:
+        print('\nSetting up test environment...')
 
-    command = ['zkRelay', '-c', './tests/conf/local_conf.toml', 'generate-files', str(batch_size)]
-    # output only if output is required
-    if verbose is True: command.insert(1, '-v')
-    subprocess.run(command,check=True)
+        command = ['zkRelay', '-c', './tests/conf/local_conf.toml', 'generate-files', str(batch_size)]
+        # output only if output is required
+        if verbose is True: command.insert(1, '-v')
+        subprocess.run(command,check=True,output=verbose_output)
 
-    command = ['zkRelay', '-c', './tests/conf/local_conf.toml', 'setup']
-    # output only if output is required
-    if verbose is True: command.insert(1, '-v')
-    subprocess.run(command,check=True)
-    
-    print('Done.')
+        command = ['zkRelay', '-c', './tests/conf/local_conf.toml', 'setup']
+        # output only if output is required
+        if verbose is True: command.insert(1, '-v')
+        subprocess.run(command,check=True,output=verbose_output)
+        
+        print('Done.')
 
 def setup_merkle_proof_test_environment(batch_size, batch_no, verbose=False):
     print('\nSetting up merkle proof environment...')
+    # rm output files from earlier tests
+    verbose_output = subprocess.DEVNULL if verbose is False else None
+    subprocess.run(['rm', 'mk_tree_validation/witness'], check=False, stdout=verbose_output)
+
     setup_validate_test_environment(batch_size, batch_no, verbose)
+
     subprocess.run(['zkRelay', 'setup-merkle-proof'],
-                check=True, stdout=subprocess.DEVNULL)
+                check=True, stdout=verbose_output)
     print('Done.')
 
 """
@@ -49,7 +65,7 @@ def validateBatchFromBlockNo(ctx, blockNo, batch_size):
 def exec_validate(ctx, conf_file_path, batch_size, batch_no, verbose=False):
         host = ctx.obj.get('bitcoin_client').get('host')
         port = ctx.obj.get('bitcoin_client').get('port')
-        verbose_output = subprocess.DEVNULL if not verbose else None
+        verbose_output = subprocess.DEVNULL if verbose is False else None
 
         # get json config for test case
         fd = open(
@@ -109,3 +125,21 @@ def exec_proof(ctx, conf_file_path, block_nr, verbose=False):
 
 def get_first_block_in_batch(batch_no, batch_size):
     return (batch_no - 1) * batch_size + 1
+
+def check_zkRelay_setup_batch_size(batch_size):
+    general_zkRelayConf = toml.load(general_zkRelayConf_file_path)
+    test_zkRelayConf = toml.load(test_zkRelayConf_files_path)
+
+    if general_zkRelayConf['zokrates_file_generator']['batch_size'] is not batch_size:
+        # updating batch_size in general_zkRelayConf
+        test_zkRelayConf['zokrates_file_generator']['batch_size'] = general_zkRelayConf['zokrates_file_generator']['batch_size']
+
+        general_zkRelayConf['zokrates_file_generator']['batch_size'] = batch_size
+        general_zkRelayConf['general']['config_file_path'] = general_zkRelayConf_file_path
+        general_zkRelayConf['general']['verbose_output'] = None
+        ctx = Context()
+        ctx.obj = general_zkRelayConf
+
+        save_conf_file(ctx)
+    
+    return test_zkRelayConf['zokrates_file_generator']['batch_size']

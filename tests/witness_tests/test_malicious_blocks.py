@@ -10,14 +10,11 @@ from tests import test_helper
 BATCH_SIZE = 2
 BATCH_NO = 1
 
-# Mockup of Click.Context object that is normally passed through cli to functions
-class Context:
-    obj = {}
 class TestMaliciousBlocks(unittest.TestCase):
     conf_dir_path = '/test_witness/test_malicious_blocks'
 
     def setUp(self):        
-        self.ctx = Context()
+        self.ctx = test_helper.Context()
         self.ctx.obj = toml.load('./tests/conf/local_conf.toml')
 
     def test_1_malicious_merkle_roots(self):

@@ -10,15 +10,11 @@ from preprocessing.create_input import generateZokratesInputForMerkleProof
 import os
 from tests import test_helper
 
-# Mock Click.Context object that is normally passed through cli to functions 
-class Context:
-    obj = {}
-
 class TestCorrectMerkleProofs(unittest.TestCase):
     verbose = False
 
     def setUp(self):
-        self.ctx = Context()
+        self.ctx = test_helper.Context()
         self.ctx.obj = toml.load('./tests/conf/local_conf.toml')
 
     def test_batch_size_2(self):

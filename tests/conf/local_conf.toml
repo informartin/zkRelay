@@ -1,7 +1,7 @@
 title = "local test config file"
 
 [general]
-verbose = "False"
+verbose = false
 
 [bitcoin_client]
 host = "localhost"
@@ -10,4 +10,4 @@ user = "testUser"
 pwd = "testPwd"
 
 [zokrates_file_generator]
-batch_size = 2
+batch_size = 0
