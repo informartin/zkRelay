@@ -161,11 +161,11 @@ If you want to test specific test files or test cases you can do so by just call
 Lets say you want to test malicious input for the zkRelay command validate, then you would execute the following:
 
 ``` bash
-$ python -m unittest tests.witness_tests.test_malicious_blocks.TestMaliciousBlocks
+$ python -m unittest tests.cmd_validate_tests.test_malicious_blocks.TestMaliciousBlocks
 ```
 
 If you only want to test one test case, e.g. test_7_crossover_of_epochs, your command would like like the following:
 
 ``` bash
-$ python -m unittest tests.witness_tests.test_malicious_blocks.TestMaliciousBlocks.test_7_crossover_of_epochs
+$ python -m unittest tests.cmd_validate_tests.test_malicious_blocks.TestMaliciousBlocks.test_7_crossover_of_epochs
 ```
