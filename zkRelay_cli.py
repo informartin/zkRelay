@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import click
+import re
 import generate_zokrates_files as zokrates_file_generator
 import preprocessing
 import toml
@@ -34,10 +35,24 @@ def generate_files(ctx, batch_size):
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_validation_code(batch_size), "validate.zok".format(i=batch_size))
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_root_code(batch_size), "compute_merkle_root.zok".format(i=batch_size))
     zokrates_file_generator.write_zokrates_file(zokrates_file_generator.generate_merkle_proof_validation_code(batch_size), "verify_merkle_proof.zok".format(i=batch_size))
+
     if not os.path.exists('mk_tree_validation'):
         os.mkdir('mk_tree_validation')
     os.rename("verify_merkle_proof.zok", "mk_tree_validation/verify_merkle_proof.zok")
     click.echo('Done.')
+
+    # save batch_size in smart contract batch_verifier.sol
+    click.echo(colored('Updating batch_verifier.sol...', 'cyan'))
+    with open('batch_verifier.sol', 'r') as r_batch_verifier_file:
+        # get content of smart contract and replace batch_size
+        old_contract_content = r_batch_verifier_file.read()
+        new_contract_content = re.sub(r'BATCH_SIZE = \d+', f'BATCH_SIZE = {batch_size}', old_contract_content)
+        
+        # save new content with updated batch_size
+        with open('batch_verifier.sol', 'w') as w_batch_verifier_file:
+            w_batch_verifier_file.write(new_contract_content)
+    click.echo(colored('Done.', 'green'))
+
     # save batch_size in conf file for later use
     click.echo('Updating conf file...')
     ctx.obj['zokrates_file_generator']['batch_size'] = batch_size
