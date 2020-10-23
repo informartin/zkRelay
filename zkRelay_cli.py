@@ -46,7 +46,7 @@ def generate_files(ctx, batch_size):
     with open('batch_verifier.sol', 'r') as r_batch_verifier_file:
         # get content of smart contract and replace batch_size
         old_contract_content = r_batch_verifier_file.read()
-        new_contract_content = re.sub('BATCH_SIZE = \d+', f'BATCH_SIZE = {batch_size}', old_contract_content)
+        new_contract_content = re.sub('BATCH_SIZE = \d+', 'BATCH_SIZE = {}'.format(batch_size), old_contract_content)
         
         # save new content with updated batch_size
         with open('batch_verifier.sol', 'w') as w_batch_verifier_file:
