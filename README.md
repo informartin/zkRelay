@@ -2,6 +2,8 @@
 
 zkRelay facilitates a chain-relay from Bitcoin to Ethereum through zkSNARKS.
 
+The detailed concept of zkRelay can be found in the respective research paper published at IEEE Security & Privacy on the Blockchain 2020: [Preprint at Cryptology ePrint Archive](https://eprint.iacr.org/2020/433.pdf) / [IEEE Conference Proceedings](https://doi.org/10.1109/EuroSPW51379.2020.00058)
+
 The implementation is based on [ZoKrates](https://github.com/Zokrates/ZoKrates) and performs off-chain Bitcoin header chain validations, while only the resulting proof is submitted to the target ledger.
 
 The workflow of zkRelay is seperated into three steps, ZoKrates code generation, a one-time compilation and setup step and many-time validation.
