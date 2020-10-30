@@ -44,27 +44,9 @@ $ zkRelay generate-files n
 
 ## Compilation and Setup
 
+In this step, the off-chain program is compiled, the setup for generatung proving and verification keys are executed and the smart contract verifier is generated. zkRelay integrates these three tasks in a single execution step, the setup:
 ``` bash
 $ zkRelay setup
-```
-With this zkRelay-cli command we start an execution pipeline of three ZoKrates cmds:
-
-- First, the off-chain validation program has to be compiled:
-
-``` bash
-$ zokrates compile --light -i validate.zok
-```
-
-- Second, the proving and verfication keys are generated in the setup step:
-
-``` bash
-$ zokrates setup --light
-```
-
-- Third, a smart contract is generated that validates proofs:
-
-``` bash
-$ zokrates export-verifier
 ```
   
 The resulting zkRelay contract `batch_verifier.sol` has to be deployed using a tool of your choice. It references the generated verification contract `verifier.sol` which has to be available during deployment.
