@@ -143,6 +143,7 @@ contract BatchVerifier {
         Branch storage challengeChain = branches[numBranches++];
         Batch storage batch = challengeChain.batchChain[challengeChain.numBatchChain];
         
+        challengeChain.startingAtBatchHeight = batchHeight;
         createBatch(input, challengeChain, batch);
 
         emit AddedNewChallenge(numBranches);
