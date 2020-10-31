@@ -4,6 +4,7 @@ import sys
 import subprocess
 import click
 import copy
+import re
 import generate_zokrates_files as zokrates_file_generator
 import preprocessing
 import toml
@@ -35,7 +36,7 @@ def zkRelay_cli(ctx, verbose, config_file):
     ctx.obj['general']['config_file_path'] = config_file_path
 
     # check if verbose output is required
-    if ctx.obj['general']['verbose'] or verbose:
+    if verbose:
         ctx.obj['general']['verbose_output'] = None
         ctx.obj['general']['verbose'] = True
     else:
@@ -56,6 +57,18 @@ def generate_files(ctx, batch_size):
     if not os.path.exists('mk_tree_validation'):
         os.mkdir('mk_tree_validation')
     os.rename("verify_merkle_proof.zok", "mk_tree_validation/verify_merkle_proof.zok")
+    click.echo(colored('Done.', 'green'))
+
+    # save batch_size in smart contract batch_verifier.sol
+    click.echo(colored('Updating batch_verifier.sol...', 'cyan'))
+    with open('batch_verifier.sol', 'r') as r_batch_verifier_file:
+        # get content of smart contract and replace batch_size
+        old_contract_content = r_batch_verifier_file.read()
+        new_contract_content = re.sub('BATCH_SIZE = \d+', 'BATCH_SIZE = {}'.format(batch_size), old_contract_content)
+        
+        # save new content with updated batch_size
+        with open('batch_verifier.sol', 'w') as w_batch_verifier_file:
+            w_batch_verifier_file.write(new_contract_content)
     click.echo(colored('Done.', 'green'))
 
     # save batch_size in conf file for later use
@@ -139,7 +152,6 @@ def create_merkle_proof(ctx, block_no, bc_host, bc_port, bc_user, bc_pwd):
         click.echo(colored('Error, cannot validate.', 'red'))
         click.echo(colored('Missing argument: ', 'red') + 'bc-host, bc-port, bc-user or bc-pwd not set in config file located at {}.'.format(ctx.obj['general']['config_file_path']))
         return
-    # input()
     click.echo(colored('Getting block information and generating zokrates input...', 'cyan'))
     first_block_in_batch = block_no - ((block_no -1) % batch_size)
     block_hashes = [preprocessing.littleEndian(header) for header in preprocessing.getBlockHeadersInRange(ctx, first_block_in_batch, first_block_in_batch + batch_size)]
@@ -238,13 +250,13 @@ def processBCClientConf(ctx, bc_host, bc_port, bc_user, bc_pwd):
 
 def save_conf_file(ctx):
     click.echo(colored('Updating conf file...', 'cyan'))
-    fd = open(ctx.obj['general']['config_file_path'], 'w')
 
-    # deleting unnecessary entries
-    conf = copy.deepcopy(ctx.obj)
-    del conf['general']['config_file_path']
-    del conf['general']['verbose_output']
-    toml.dump(conf, fd)
+    with open(ctx.obj['general']['config_file_path'], 'w') as fd:
+        # deleting unnecessary entries
+        conf = copy.deepcopy(ctx.obj)
+        del conf['general']['config_file_path']
+        del conf['general']['verbose_output']
+        del conf['general']['verbose']
+        toml.dump(conf, fd)
 
-    fd.close()
     click.echo(colored('Done!', 'green'))
