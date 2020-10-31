@@ -24,7 +24,7 @@ class TestWitnessCorrectBlocks(unittest.TestCase):
         # check if required files are generated
         test_helper.setup_validate_test_environment(batch_size, batch_no)
 
-        test_helper.exec_validate(self.ctx, '{}/start_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no)
+        test_helper.exec_compute_witness(self.ctx, '{}start_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no)
         
         with open('./output/witness{}'.format(batch_no), 'r') as witness:
             lines = witness.readlines()
@@ -38,7 +38,7 @@ class TestWitnessCorrectBlocks(unittest.TestCase):
         # check if required files are generated
         test_helper.setup_validate_test_environment(batch_size, batch_no)
 
-        test_helper.exec_validate(self.ctx, '{}/end_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no)
+        test_helper.exec_compute_witness(self.ctx, '{}end_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no)
         
         with open('./output/witness{}'.format(batch_no), 'r') as witness:
             lines = witness.readlines()

@@ -18,6 +18,7 @@ def setup_validate_test_environment(batch_size, batch_no, verbose=False):
     # rm output files from earlier tests
     verbose_output = subprocess.DEVNULL if verbose is False else None
     subprocess.run(['rm', 'output/witness{}'.format(batch_no)], check=False, stdout=verbose_output)
+    subprocess.run(['rm', 'output/proof{}.json'.format(batch_no)], check=False, stdout=verbose_output)
 
     # normal conf has to be checked to see if the user did another batch size
     # before the first test
@@ -25,7 +26,7 @@ def setup_validate_test_environment(batch_size, batch_no, verbose=False):
 
     # check if correct files are already generated and zkRelay setup executed
     if current_setup_batch_size is not batch_size:
-        print('\nSetting up test environment...')
+        print('\nSetting up validate test environment...')
 
         command = ['zkRelay', '-c', './tests/conf/local_conf.toml', 'generate-files', str(batch_size)]
         # output only if output is required
@@ -62,14 +63,14 @@ def validateBatchFromBlockNo(ctx, blockNo, batch_size):
     os.system('mv witness output/witness' + str(blockNo))
     os.system('mv proof.json output/proof' + str(blockNo) + '.json')
 """
-def exec_validate(ctx, conf_file_path, batch_size, batch_no, verbose=False):
+def exec_compute_witness(ctx, conf_file_path, batch_size, batch_no, verbose=False):
         host = ctx.obj.get('bitcoin_client').get('host')
         port = ctx.obj.get('bitcoin_client').get('port')
         verbose_output = subprocess.DEVNULL if verbose is False else None
 
         # get json config for test case
         fd = open(
-            './tests/test_data{}'.format(conf_file_path))
+            './tests/test_data/{}'.format(conf_file_path))
         config = json.load(fd)
         fd.close()
 
@@ -100,14 +101,14 @@ def exec_validate(ctx, conf_file_path, batch_size, batch_no, verbose=False):
             print(sys.exc_info())
             httpserver.check_assertions()
 
-def exec_proof(ctx, conf_file_path, block_nr, verbose=False):
+def exec_merkle_proof(ctx, conf_file_path, block_nr, verbose=False):
     host = ctx.obj.get('bitcoin_client').get('host')
     port = ctx.obj.get('bitcoin_client').get('port')
     verbose_output = subprocess.DEVNULL if not verbose else None
 
     # get json config for test case
     fd = open(
-        './tests/test_data{}'.format(conf_file_path))
+        './tests/test_data/{}'.format(conf_file_path))
     config = json.load(fd)
     fd.close()
 
@@ -123,6 +124,23 @@ def exec_proof(ctx, conf_file_path, block_nr, verbose=False):
         except subprocess.CalledProcessError:
             return False
 
+def exec_validate_cmd(ctx, conf_file_path, batch_no, verbose=False):
+    host = ctx.obj.get('bitcoin_client').get('host')
+    port = ctx.obj.get('bitcoin_client').get('port')
+    verbose_output = subprocess.DEVNULL if not verbose else None
+
+    # get json config for test case
+    fd = open(
+        './tests/test_data/{}'.format(conf_file_path))
+    config = json.load(fd)
+    fd.close()
+
+    with HTTPServer(host=host, port=port) as httpserver:
+        for http_response in config.get('http_responses'):
+            httpserver.expect_ordered_request('/').respond_with_json(http_response)
+
+        subprocess.run(['zkRelay', '-c', './tests/conf/local_conf.toml', 'validate', str(batch_no)], check=True, stdout=verbose_output)
+
 def get_first_block_in_batch(batch_no, batch_size):
     return (batch_no - 1) * batch_size + 1
 
@@ -135,6 +153,7 @@ def check_zkRelay_setup_batch_size(batch_size):
     if general_zkRelayConf['zokrates_file_generator']['batch_size'] is not batch_size:
         general_zkRelayConf['zokrates_file_generator']['batch_size'] = batch_size
         update_conf_file(general_zkRelayConf, general_zkRelayConf_file_path, batch_size)
+    # elif might not be necessary...
     elif test_zkRelayConf['zokrates_file_generator']['batch_size'] is not batch_size:
         test_zkRelayConf['zokrates_file_generator']['batch_size'] = batch_size
         update_conf_file(general_zkRelayConf, general_zkRelayConf_file_path, batch_size)
@@ -142,8 +161,11 @@ def check_zkRelay_setup_batch_size(batch_size):
     return current_batch_size
 
 def update_conf_file(conf_obj, file_path, batch_size):
+    # insert elements so that no error is thrown in save_conf_file
     conf_obj['general']['config_file_path'] = file_path
     conf_obj['general']['verbose_output'] = None
+    conf_obj['general']['verbose'] = False
+    
     ctx = Context()
     ctx.obj = conf_obj
     save_conf_file(ctx)

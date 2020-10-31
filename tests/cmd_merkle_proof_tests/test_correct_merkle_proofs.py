@@ -32,7 +32,7 @@ class TestCorrectMerkleProofs(unittest.TestCase):
         for block_nr in range(first_block_in_batch, block_range):
             counter = (block_nr - 1) % batch_size
             
-            test_helper.exec_proof(self.ctx, '/test_proof/test_correct_proofs/batch_size_2_nr_{}.json'.format(counter), block_nr)
+            test_helper.exec_merkle_proof(self.ctx, 'test_proof/test_correct_proofs/batch_size_2_nr_{}.json'.format(counter), block_nr)
             
             with open('./mk_tree_validation/witness', 'r') as witness:
                 lines = witness.readlines()
@@ -58,7 +58,7 @@ class TestCorrectMerkleProofs(unittest.TestCase):
         for block_nr in range(first_block_in_batch, block_range):
             counter = (block_nr - 1) % batch_size
             
-            test_helper.exec_proof(self.ctx, '/test_proof/test_correct_proofs/batch_size_5_nr_{}.json'.format(counter), block_nr)
+            test_helper.exec_merkle_proof(self.ctx, 'test_proof/test_correct_proofs/batch_size_5_nr_{}.json'.format(counter), block_nr)
             
             with open('./mk_tree_validation/witness', 'r') as witness:
                 lines = witness.readlines()
@@ -84,13 +84,13 @@ class TestCorrectMerkleProofs(unittest.TestCase):
         for block_nr in range(first_block_in_batch, block_range):
             counter = (block_nr - 1) % batch_size
             
-            test_helper.exec_proof(self.ctx, f'/test_proof/test_correct_proofs/batch_size_10_nr_{counter}.json', block_nr)
+            test_helper.exec_merkle_proof(self.ctx, 'test_proof/test_correct_proofs/batch_size_10_nr_{}.json'.format(counter), block_nr)
             
             with open('./mk_tree_validation/witness', 'r') as witness:
                 lines = witness.readlines()
 
                 self.assertEqual(lines[0].rstrip(), '~out_3 16337350273637649591439682102568762216', 
-                        f'inclusion prove for block nr {block_nr} in merkle tree of {batch_size} blocks was not successful.')
+                        'inclusion prove for block nr {} in merkle tree of {} blocks was not successful.'.format(block_nr, batch_size))
                 
                 self.assertEqual(lines[1].rstrip(), '~out_2 11202167189876744263973656195464312346', 
-                        f'inclusion prove for block nr {block_nr} in merkle tree of {batch_size} blocks was not successful.')
+                        'inclusion prove for block nr {} in merkle tree of {} blocks was not successful.'.format(block_nr, batch_size))

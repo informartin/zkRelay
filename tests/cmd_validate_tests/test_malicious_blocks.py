@@ -26,7 +26,7 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated
         test_helper.setup_validate_test_environment(BATCH_SIZE, BATCH_NO)
 
-        test_helper.exec_validate(self.ctx, '{}/malicious_merkle_root.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
+        test_helper.exec_compute_witness(self.ctx, '{}malicious_merkle_root.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
         
         # checking if output found error with help of regex
         with open('./output/witness1', 'r') as witness:
@@ -43,7 +43,7 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         test_helper.setup_validate_test_environment(BATCH_SIZE, BATCH_NO)
 
-        test_helper.exec_validate(self.ctx, '{}/malicious_blocks_version_hex.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
+        test_helper.exec_compute_witness(self.ctx, '{}malicious_blocks_version_hex.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
         
         # checking if output found error with help of regex
         with open('./output/witness1', 'r') as witness:
@@ -60,7 +60,7 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         test_helper.setup_validate_test_environment(BATCH_SIZE, BATCH_NO)
         
-        test_helper.exec_validate(self.ctx, '{}/malicious_prev_block.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
+        test_helper.exec_compute_witness(self.ctx, '{}malicious_prev_block.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
         
         # checking if output found error with help of regex
         with open('./output/witness1', 'r') as witness:
@@ -75,7 +75,7 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         test_helper.setup_validate_test_environment(BATCH_SIZE, BATCH_NO)
 
-        test_helper.exec_validate(self.ctx, '{}/epoch_block_non_sufficient_pow.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
+        test_helper.exec_compute_witness(self.ctx, '{}epoch_block_non_sufficient_pow.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
         
         # checking if output found error with help of regex
         with open('./output/witness1', 'r') as witness:
@@ -90,7 +90,7 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         test_helper.setup_validate_test_environment(BATCH_SIZE, BATCH_NO)
 
-        test_helper.exec_validate(self.ctx, '{}/block_batch_non_sufficient_pow.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
+        test_helper.exec_compute_witness(self.ctx, '{}block_batch_non_sufficient_pow.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO)
         
         # checking if output found error with help of regex
         with open('./output/witness1', 'r') as witness:
@@ -108,7 +108,7 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         test_helper.setup_validate_test_environment(batch_size, batch_no)
 
-        test_helper.exec_validate(self.ctx, '{}/crossover_of_epochs.json'.format(self.conf_dir_path), batch_size, batch_no)
+        test_helper.exec_compute_witness(self.ctx, '{}crossover_of_epochs.json'.format(self.conf_dir_path), batch_size, batch_no)
         
         with open('./output/witness{}'.format(batch_no), 'r') as witness:
             lines = witness.readlines()
