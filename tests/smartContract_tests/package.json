@@ -1,0 +1,23 @@
+{
+  "name": "smart_contracts_tests_for_zkrelay",
+  "version": "1.0.0",
+  "description": "Smart Contract Tests for zkrelay",
+  "main": "",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "bash exec_test.sh",
+    "compile": "truffle compile"
+  },
+  "author": "Leonard Stutzer",
+  "license": "ISC",
+  "dependencies": {
+    "truffle": "^5.1.49"
+  },
+  "devDependencies": {
+    "@openzeppelin/test-environment": "^0.1.5",
+    "@openzeppelin/test-helpers": "^0.5.7",
+    "ganache-cli": "^6.12.0"
+  }
+}

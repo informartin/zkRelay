@@ -1,7 +1,6 @@
 title = "local test config file"
 
 [general]
-verbose = false
 
 [bitcoin_client]
 host = "localhost"
