@@ -6,7 +6,7 @@ import "./mk_tree_validation/verifier.sol" as mkVerifier;
 
 contract BatchVerifier {
 
-    uint256 constant BATCH_SIZE = 5;
+    uint256 constant BATCH_SIZE = 4;
     uint256 constant EPOCH_SIZE = 2016;
     uint256 constant BATCHES_IN_EPOCH = EPOCH_SIZE / BATCH_SIZE;
 
@@ -138,7 +138,7 @@ contract BatchVerifier {
         Batch storage genesisBatch = challengeChain.batchChain[challengeChain.numBatchChain++];
         Batch storage batch = challengeChain.batchChain[challengeChain.numBatchChain];
         challengeChain.startingAtBatchHeight = batchHeight;
-
+        
         // add 'genesis block' to new challenging chain
         genesisBatch.cumDifficulty = branches[0].batchChain[batchHeight - 1].cumDifficulty;
 
@@ -229,6 +229,8 @@ contract BatchVerifier {
             Batch storage batch = branches[0].batchChain[batchNo];
             require(batch.merkleRoot == merkleRoot, 'Merkle root of request is not the same as merkle root of batch');
             batch.intermediaryHeader[headerHash] = [input[0], input[1], input[2], input[3], input[4]];
+
+            emit AddedNewIntermediaryBlock(batchNo, headerHash);
         }
 
     function difficultyFromTarget(uint256 target) private pure returns (uint256) {
@@ -265,5 +267,6 @@ contract BatchVerifier {
     event AddedNewBatch(uint256 batchHeight);
     event AddedNewChallenge(uint256 challengeID);
     event AddedNewBatchToChallenge(uint256 challengeID, uint256 batchHeight);
+    event AddedNewIntermediaryBlock(uint256 batchNo, uint256 headerHash);
     event SettledChallenge(uint256 challengeID);
 }
