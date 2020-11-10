@@ -158,10 +158,11 @@ $ python -m unittest tests.cmd_validate_tests.test_malicious_blocks.TestMaliciou
 
 ## Smart Contract
 
-We use the truffle test suite for our test cases. Before you can execute the tests, you need to go to the smartContract_test folder:
+We use the truffle test suite for our test cases. Before you can execute the tests, you need to go to the smartContract_test folder and install all required packages:
 
 ``` bash
 $ cd {Project_Root}/tests/smartContract_tests/
+$ npm install
 ```
 
 Then, you can execute all tests with the following command:
