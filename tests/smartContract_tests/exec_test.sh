@@ -3,52 +3,94 @@ contract_file_path="contracts/"
 cwd_smart_contracts="./../../"
 cwd_truffle="tests/smartContract_tests/"
 
-echo "Generating and compiling smart contracts and validating batches:"
-batch_sizes=(2 4)
-batch_count=(1 0)
-# TODO do the following in a loop for copying smart contracts with differenct batch sizes
-# ${!batch_sizes[@]} returns all indizes of array batch_sizes
-for i in ${!batch_sizes[@]}; do
-    echo "For batch_size = ${batch_sizes[$i]}, batch_count = ${batch_count[$i]}"
+# check if smart contract has changed
+if [[ ${cwd_smart_contracts}batch_verifier.sol -nt ${contract_file_path}batch_verifier_2.sol || ${cwd_smart_contracts}verifier.sol -nt ${contract_file_path}verifier_4_chainChallenge.sol ]]; then
+    echo "Generating and compiling smart contracts and validating batches:"
+    batch_sizes=(2 4)
+    batch_count=(1 0)
+    # ${!batch_sizes[@]} returns all indizes of array batch_sizes
+    for i in ${!batch_sizes[@]}; do
+        echo "For batch_size = ${batch_sizes[$i]}, batch_count = ${batch_count[$i]}"
 
-    # go into root directory of zkRelay repository to setup dynamic test environment
+        # go into root directory of zkRelay repository to setup dynamic test environment
+        cd ${cwd_smart_contracts}
+
+        # get amount of batches that need to be validated for the specific batch_size
+        echo "Generate Smart Contract, compile zokrates program and validate batches..."
+        j=0
+        while [ $j -lt ${batch_count[$i]} ]; do
+            batch_counter=$(expr $j + 1)
+
+            # correct_proof_<batch_size>_<batch_count>.json
+            # execute following commands:
+            # zkRelay generate-files ${batch_sizes[$i]}
+            # zkRelay setup
+            # zkRelay validate ${batch_counter}
+            python3 ${cwd_truffle}/test/compile_SM_validate_batch.py ${batch_sizes[$i]} ${batch_counter} "correct_${batch_sizes[$i]}_${batch_counter}.json"
+
+            # Copy proofs to smartContract folder
+            cp output/proof${batch_counter}.json ${cwd_truffle}test/test_data/correct_proof_${batch_sizes[$i]}_${batch_counter}.json
+
+            # iterator
+            j=$(expr $j + 1)
+        done
+        echo "Done."
+
+        cp batch_verifier.sol ${cwd_truffle}${contract_file_path}batch_verifier_${batch_sizes[$i]}.sol
+        cp verifier.sol ${cwd_truffle}${contract_file_path}verifier_${batch_sizes[$i]}.sol
+
+        ## sol file in mk_tree_validation
+        cp mk_tree_validation/verifier.sol ${cwd_truffle}${contract_file_path}mk_tree_validation/verifier_${batch_sizes[$i]}.sol
+
+        # Go back to truffle directory
+        cd ${cwd_truffle}
+
+        ## change imports of batch_verifier
+        python3 test/rename_smart_contracts_and_imports.py ${batch_sizes[$i]}
+    done
+    echo "done."
+
+    ###############################################################################
+    echo "Generating files for chain challenge test"
+    # Generating smart contracts and validating batches for chain challenge test
+
+    ## go into root directory of zkRelay repository to setup dynamic test environment
     cd ${cwd_smart_contracts}
 
-    # get amount of batches that need to be validated for the specific batch_size
-    echo "Generate Smart Contract, compile zokrates program and validate batches..."
-    j=0
-    while [ $j -lt ${batch_count[$i]} ]; do
-        batch_counter=`expr $j + 1`
+    ## correct_proof_<batch_size>_<batch_count>.json
+    ## execute following commands:
+    ## zkRelay generate-files ${batch_sizes[$i]}
+    ## zkRelay setup
+    ## zkRelay validate ${batch_counter}
+    python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119640 "correct_4_119640.json"
+    python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119641 "correct_4_119641.json"
 
-        # correct_proof_<batch_size>_<batch_count>.json
-        # execute following commands:
-        # zkRelay generate-files ${batch_sizes[$i]}
-        # zkRelay setup
-        # zkRelay validate ${batch_counter}
-        python3 ${cwd_truffle}/test/compile_SM_validate_batch.py ${batch_sizes[$i]} ${batch_counter} "correct_${batch_sizes[$i]}_${batch_counter}.json"
-        
-        # Copy smart contracts and proofs to smartContract folder
-        cp output/proof${batch_counter}.json ${cwd_truffle}test/test_data/correct_proof_${batch_sizes[$i]}_${batch_counter}.json
+    ## Copy proofs to smartContract folder
+    cp output/proof119640.json ${cwd_truffle}test/test_data/correct_proof_4_119640.json
+    cp output/proof119641.json ${cwd_truffle}test/test_data/correct_proof_4_119641.json
 
-        # iterator
-        j=`expr $j + 1`
-    done
-    echo "Done."
+    ## execute for fork
+    python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119640 "correct_4_119640_bitcoin_cash.json"
+    cp output/proof119640.json ${cwd_truffle}test/test_data/correct_proof_4_119640_bitcoin_cash.json
 
-    cp batch_verifier.sol ${cwd_truffle}${contract_file_path}batch_verifier_${batch_sizes[$i]}.sol
-    cp verifier.sol ${cwd_truffle}${contract_file_path}verifier_${batch_sizes[$i]}.sol
+    cp batch_verifier.sol ${cwd_truffle}${contract_file_path}batch_verifier_4_chainChallenge.sol
+    cp verifier.sol ${cwd_truffle}${contract_file_path}verifier_4_chainChallenge.sol
 
     ## sol file in mk_tree_validation
-    cp mk_tree_validation/verifier.sol ${cwd_truffle}${contract_file_path}mk_tree_validation/verifier_${batch_sizes[$i]}.sol
+    cp mk_tree_validation/verifier.sol ${cwd_truffle}${contract_file_path}mk_tree_validation/verifier_4_chainChallenge.sol
 
     # Go back to truffle directory
     cd ${cwd_truffle}
 
     ## change imports of batch_verifier
-    python3 test/rename_smart_contracts_and_imports.py ${batch_sizes[$i]}
-done
+    python3 test/rename_smart_contracts_and_imports.py 4_chainChallenge
 
-echo "Done."
+    ## change genesis block of batch_verifier
+    python3 test/change_genesis_block.py 4_chainChallenge 0x000000000000000000000000000000006934fca9a5dd15210ad36fd1898d6c0a 0x00000000000000000000000000000000c300dba0aa0148000000000000000000 0x00000000000000000000000000000000020000201082264c64bfe00b14d00731 0x0000000000000000000000000000000069508d52efeadb5b35a4e70000000000 0x0000000000000000000000000000000000000000f3ba19fccfd6fa26d1a65f0a 0x000000000000000000000000000000002885441a8f50664a4b115aefe77190f1 0x0000000000000000000000000000000014aee3289ac8795935470118c4a6d809
+
+    ###############################################################################
+    echo "Done."
+fi
 
 # Exec actual tests
 echo "Exec: truffle test"

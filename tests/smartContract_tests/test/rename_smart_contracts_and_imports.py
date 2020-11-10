@@ -11,7 +11,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         exit(1)
     
-    batch_size = int(sys.argv[1])
+    batch_size = str(sys.argv[1])
 
     # changing mk_tree_validation/verifier.sol
     with open('contracts/mk_tree_validation/verifier_{}.sol'.format(batch_size), 'r') as r_verifier_file:

@@ -3,4 +3,4 @@ build
 package-lock.json
 *sol
 !Migrations.sol
-correct_proof*
+*.json

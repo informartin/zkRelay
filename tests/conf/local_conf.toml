@@ -9,4 +9,4 @@ user = "testUser"
 pwd = "testPwd"
 
 [zokrates_file_generator]
-batch_size = 0
+batch_size = 4

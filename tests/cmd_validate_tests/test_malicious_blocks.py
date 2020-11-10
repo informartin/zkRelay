@@ -11,7 +11,7 @@ BATCH_SIZE = 2
 BATCH_NO = 1
 
 class TestMaliciousBlocks(unittest.TestCase):
-    conf_dir_path = '/test_witness/test_malicious_blocks'
+    conf_dir_path = 'test_witness/test_malicious_blocks/'
 
     def setUp(self):        
         self.ctx = test_helper.Context()

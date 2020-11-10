@@ -11,7 +11,7 @@ import sys
 from tests import test_helper
 
 class TestWitnessCorrectBlocks(unittest.TestCase):
-    conf_dir_path = '/test_witness/test_correct_blocks'
+    conf_dir_path = 'test_witness/test_correct_blocks/'
 
     def setUp(self):
         self.ctx = test_helper.Context()
