@@ -6,7 +6,7 @@ import "./mk_tree_validation/verifier.sol" as mkVerifier;
 
 contract BatchVerifier {
 
-    uint256 constant BATCH_SIZE = 4;
+    uint256 constant BATCH_SIZE = 5;
     uint256 constant EPOCH_SIZE = 2016;
     uint256 constant BATCHES_IN_EPOCH = EPOCH_SIZE / BATCH_SIZE;
 
@@ -30,8 +30,8 @@ contract BatchVerifier {
     uint numBranches;
     mapping (uint => Branch) branches;
 
-    zkVerifier.Verifier4 private verifier;
-    mkVerifier.Verifier4 private mkTreeVerifier;
+    zkVerifier.Verifier private verifier;
+    mkVerifier.Verifier private mkTreeVerifier;
 
     constructor() public {
         // add Bitcoin genesis block (little endian)
