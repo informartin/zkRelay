@@ -6,7 +6,7 @@ import "./mk_tree_validation/verifier.sol" as mkVerifier;
 
 contract BatchVerifier {
 
-    uint256 constant BATCH_SIZE = 5;
+    uint256 constant BATCH_SIZE = 4;
     uint256 constant EPOCH_SIZE = 2016;
     uint256 constant BATCHES_IN_EPOCH = EPOCH_SIZE / BATCH_SIZE;
 
@@ -30,8 +30,8 @@ contract BatchVerifier {
     uint numBranches;
     mapping (uint => Branch) branches;
 
-    zkVerifier.Verifier private verifier;
-    mkVerifier.Verifier private mkTreeVerifier;
+    zkVerifier.Verifier4 private verifier;
+    mkVerifier.Verifier4 private mkTreeVerifier;
 
     constructor() public {
         // add Bitcoin genesis block (little endian)
@@ -68,14 +68,14 @@ contract BatchVerifier {
         uint[2] memory c,
         uint[15] memory input
     ) public returns (bool r) {
-        require(verifyBatchCorrectness(a, b, c, input, 0, branches[0].numBatchChain, 0));
+        require(verifyBatchCorrectness(a, b, c, input, 0, branches[0].numBatchChain, 0), 'Could not verify batch correctness');
         
         Branch storage mainChain = branches[0];
         Batch storage batch = mainChain.batchChain[mainChain.numBatchChain];
         
         createBatch(input, mainChain, batch);
 
-        emit AddedNewBatchOfHeight((branches[0].numBatchChain - 1) * BATCH_SIZE);
+        emit AddedNewBatch((branches[0].numBatchChain - 1));
 
         return true;
     }
@@ -90,22 +90,18 @@ contract BatchVerifier {
         uint256 offset
     ) private returns (bool) {
         // Verify the correctness of the zkSNARK computation
-        if(!verifier.verifyTx(a,b, c, input))
-            return false;
+        require(verifier.verifyTx(a,b, c, input), 'Could not verify tx');
 
         // Verify the correctness of the submitted headers
-        if(input[8] != 1)
-            return false;
+        require(input[8] == 1, 'Submitted headers are not correct');
 
         // Verify reference to previous block
         uint prev_block_hash = from128To256(input[1], input[2]);
-        if(prev_block_hash != branches[branchId].batchChain[batchHeight - offset - 1].headerHash)
-            return false;
+        require(prev_block_hash == branches[branchId].batchChain[batchHeight - offset - 1].headerHash, 'Previous block hash is not correct');
 
         // Every fourth batch submission, a new epoch begin
         // Verify if the target has been calculated correctly
-        if(((batchHeight % BATCHES_IN_EPOCH) == 0) && (input[9] != 1))
-            return false;
+        require(((batchHeight % BATCHES_IN_EPOCH) != 0) || (((batchHeight % BATCHES_IN_EPOCH) == 0) && (input[9] == 1)), 'Target was not calculated correctly.');
 
         // Verify that the correct first block of an epoch was given
         // Ensure accessing the correct chain , the fork or the main chain
@@ -121,8 +117,7 @@ contract BatchVerifier {
         if(batchHeight % BATCHES_IN_EPOCH == 0)
             index = index - BATCHES_IN_EPOCH;
         // To save gas costs, only the relevant fifth field element of the epoch head is passed as parameter
-        if(input[0] != branches[branchId].batchChain[index].blockHeader[4])
-            return false;
+        require(input[0] == branches[branchId].batchChain[index].blockHeader[4], 'Epoch block ist not correct.');
 
         return true;
     }
@@ -136,19 +131,28 @@ contract BatchVerifier {
     ) public returns (uint256 challengeId) {
         // Verify batchHeight is correct
         uint prev_block_hash = from128To256(input[1], input[2]);
-        require(branches[0].batchChain[batchHeight - 1].headerHash == prev_block_hash);
+        require(branches[0].batchChain[batchHeight - 1].headerHash == prev_block_hash, 'The submitted previous block hash is not the same as the block at the batchHeight on the main chain.');
+        require(verifyBatchCorrectness(a, b, c, input, 0, batchHeight, 0), 'Could not verify batch for challenging fork.');
 
-        require(verifyBatchCorrectness(a, b, c, input, 0, batchHeight, 0));
-
-        Branch storage challengeChain = branches[numBranches++];
+        Branch storage challengeChain = branches[numBranches];
         Batch storage batch = challengeChain.batchChain[challengeChain.numBatchChain];
-        
         challengeChain.startingAtBatchHeight = batchHeight;
-        createBatch(input, challengeChain, batch);
+
+        // create initial batch for challenging chain
+        // not using createBatch() because of different calculation of cumDifficulty
+        uint256 blockHash = from128To256(input[10], input[11]);
+        uint256 difficulty = difficultyFromTarget(input[12]);
+        uint256 merkleRoot = from128To256(input[13], input[14]);
+        
+        batch.headerHash = blockHash;
+        batch.cumDifficulty = branches[0].batchChain[batchHeight - 1].cumDifficulty + difficulty;
+        batch.merkleRoot = merkleRoot;
+        batch.blockHeader = [input[3], input[4], input[5], input[6], input[7]];
+        challengeChain.numBatchChain++;
 
         emit AddedNewChallenge(numBranches);
         
-        return numBranches;
+        return numBranches++;
     }
 
     function addBatchToChallenge(
@@ -160,10 +164,9 @@ contract BatchVerifier {
     ) public returns (bool) {
         uint256 batchHeight = branches[challengeId].startingAtBatchHeight + branches[challengeId].numBatchChain;
 
-        if(!verifyBatchCorrectness(a, b, c, input, challengeId ,batchHeight, branches[challengeId].startingAtBatchHeight))
-            return false;
+        require(verifyBatchCorrectness(a, b, c, input, challengeId ,batchHeight, branches[challengeId].startingAtBatchHeight), 'Could not verify batch for challenging fork.');
 
-        Branch storage challengeChain = branches[numBranches];
+        Branch storage challengeChain = branches[challengeId];
         Batch storage batch = challengeChain.batchChain[challengeChain.numBatchChain];
 
         createBatch(input, challengeChain, batch);
@@ -174,15 +177,24 @@ contract BatchVerifier {
     }
 
     function settleChallenge(uint256 challengeId) public returns (bool) {
-        if(branches[challengeId].batchChain[branches[challengeId].numBatchChain - 1].cumDifficulty <= 
-            branches[0].batchChain[branches[challengeId].startingAtBatchHeight + branches[challengeId].numBatchChain].cumDifficulty)
-            return false;
+        uint256 cumDifficulty_ChallengeChain = branches[challengeId].batchChain[branches[challengeId].numBatchChain - 1].cumDifficulty;
+        uint256 cumDifficulty_MainChain = branches[0].batchChain[branches[0].numBatchChain - 1].cumDifficulty;
+        require(cumDifficulty_ChallengeChain > cumDifficulty_MainChain, 'Not enough proof of work on challenging chain.');
 
-        Branch storage branch = branches[0];
-        for(uint256 i = branches[challengeId].startingAtBatchHeight; i < branches[challengeId].numBatchChain; i++) {
-            Batch storage batch = branch.batchChain[i];
-            batch = branches[challengeId].batchChain[i - branches[challengeId].startingAtBatchHeight];
-            delete branch.batchChain[i];
+        Branch storage mainBranch = branches[0];
+        Branch storage challengingBranch = branches[challengeId];
+        for(uint256 i = branches[challengeId].startingAtBatchHeight; i <= branches[challengeId].numBatchChain; i++) {
+            // overwriting chain with blocks of challenging chain
+            branches[0].batchChain[i] = branches[challengeId].batchChain[i - branches[challengeId].startingAtBatchHeight];
+
+            // deleting blocks from challenging chain as they are no longer needed
+            delete challengingBranch.batchChain[i - challengingBranch.startingAtBatchHeight];
+        }
+
+        // update numBatchChain to new length
+        uint length_challengingBranch = challengingBranch.startingAtBatchHeight + challengingBranch.numBatchChain;
+        if (length_challengingBranch > mainBranch.numBatchChain) {
+            mainBranch.numBatchChain = length_challengingBranch;
         }
 
         delete branches[challengeId];
@@ -192,16 +204,16 @@ contract BatchVerifier {
         return true;
     }
 
-    function createBatch(uint[15] memory input, Branch storage mainChain, Batch storage batch) internal {
+    function createBatch(uint[15] memory input, Branch storage chain, Batch storage batch) internal {
         uint256 blockHash = from128To256(input[10], input[11]);
         uint256 difficulty = difficultyFromTarget(input[12]);
         uint256 merkleRoot = from128To256(input[13], input[14]);
         
         batch.headerHash = blockHash;
-        batch.cumDifficulty = branches[0].batchChain[branches[0].numBatchChain - 1].cumDifficulty + difficulty;
+        batch.cumDifficulty = chain.batchChain[chain.numBatchChain - 1].cumDifficulty + difficulty;
         batch.merkleRoot = merkleRoot;
         batch.blockHeader = [input[3], input[4], input[5], input[6], input[7]];
-        mainChain.numBatchChain++;
+        chain.numBatchChain++;
     }
     
     /*
@@ -216,12 +228,12 @@ contract BatchVerifier {
         uint[2] memory c,
         uint[9] memory input,
         uint batchNo) public {
-            require(mkTreeVerifier.verifyTx(a, b, c, input));
+            require(mkTreeVerifier.verifyTx(a, b, c, input), 'Could not verify tx');
             
             uint256 merkleRoot = from128To256(input[7], input[8]);
             uint256 headerHash = from128To256(input[5], input[6]);
             Batch storage batch = branches[0].batchChain[batchNo];
-            require(batch.merkleRoot == merkleRoot);
+            require(batch.merkleRoot == merkleRoot, 'Merkle root of request is not the same as merkle root of batch');
             batch.intermediaryHeader[headerHash] = [input[0], input[1], input[2], input[3], input[4]];
         }
 
@@ -234,8 +246,8 @@ contract BatchVerifier {
         return (a << 128) + b;
     }
     
-    function getLatestBlockHash() public view returns (uint256) {
-        return branches[0].batchChain[branches[0].numBatchChain - 1].headerHash;
+    function getLatestBlockHash(uint branchId) public view returns (uint256) {
+        return branches[branchId].batchChain[branches[branchId].numBatchChain - 1].headerHash;
     }
     
     // hash must be little endian!
@@ -256,8 +268,8 @@ contract BatchVerifier {
     }
 
     event TestEvent(bool);
-    event AddedNewBatchOfHeight(uint256);
-    event AddedNewChallenge(uint256);
-    event AddedNewBatchToChallenge(uint256, uint256);
-    event SettledChallenge(uint256);
+    event AddedNewBatch(uint256 batchHeight);
+    event AddedNewChallenge(uint256 challengeID);
+    event AddedNewBatchToChallenge(uint256 challengeID, uint256 batchHeight);
+    event SettledChallenge(uint256 challengeID);
 }
