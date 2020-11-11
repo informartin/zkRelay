@@ -25,7 +25,7 @@ contract('BatchVerifier2', (accounts) => {
         expectEvent(receipt, 'AddedNewBatch', { '0': new BN(1) });
 
         // check for latest block hash
-        receipt = await batch_verifier_instance.getLatestBlockHash();
+        receipt = await batch_verifier_instance.getLatestBlockHash(0);
 
         expect(receipt).to.be.bignumber.equal(new BN('85878663077284866801469176824632952841341549244818799940625725638586142818304'));
     });
@@ -43,7 +43,7 @@ contract('BatchVerifier2', (accounts) => {
         );
 
         // check for latest block hash
-        const receipt = await batch_verifier_instance.getLatestBlockHash();
+        const receipt = await batch_verifier_instance.getLatestBlockHash(0);
 
         expect(receipt).to.be.bignumber.equal(new BN('50607000162736768413865283251298348907857627207201349845683772230799839985664'));
     });
