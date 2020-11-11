@@ -165,7 +165,8 @@ contract BatchVerifier {
 
         createBatch(input, challengeChain, batch);
 
-        emit AddedNewBatchToChallenge(challengeId, branches[challengeId].numBatchChain);
+        // -1 because of 'genesis block' on challenging chain
+        emit AddedNewBatchToChallenge(challengeId, branches[challengeId].numBatchChain - 1);
 
         return true;
     }
@@ -179,6 +180,7 @@ contract BatchVerifier {
         Branch storage challengingBranch = branches[challengeId];
         for(uint256 i = branches[challengeId].startingAtBatchHeight; i <= branches[challengeId].numBatchChain; i++) {
             // overwriting chain with blocks of challenging chain
+            // +1 because of 'genesis block' on challenging chain
             mainBranch.batchChain[i] = challengingBranch.batchChain[i - challengingBranch.startingAtBatchHeight + 1];
 
             // deleting blocks from challenging chain as they are no longer needed
@@ -186,7 +188,8 @@ contract BatchVerifier {
         }
 
         // update numBatchChain of main chain to new length
-        uint mainBranch.numBatchChain = challengingBranch.startingAtBatchHeight + challengingBranch.numBatchChain;
+        // -1 because of 'genesis block' on challenging chain
+        mainBranch.numBatchChain = challengingBranch.startingAtBatchHeight + challengingBranch.numBatchChain - 1;
 
         delete branches[challengeId];
 
