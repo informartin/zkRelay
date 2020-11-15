@@ -1,0 +1,179 @@
+{
+    "http_requests": [
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [478561], "id": 1}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [478562], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [478563], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [478564], "id": 2}],
+        [{"jsonrpc": "2.0", "method": "getblock", "params": ["0000000000000000008876768068eea31f8f34e2f029765cd2ac998bdc3a2b2d"], "id": 3}, {"jsonrpc": "2.0", "method": "getblock", "params": ["0000000000000000012b513d6c36f80d29f61e8cd3c0014ae4cef2f6d1001470"], "id": 4}, {"jsonrpc": "2.0", "method": "getblock", "params": ["00000000000000000136d80f48a68ef641b3074416cd4b34f23cfbf8c48f6f49"], "id": 4}, {"jsonrpc": "2.0", "method": "getblock", "params": ["0000000000000000006e4a5bfe485f651796fe0f87e0166adec524f8b26202aa"], "id": 4}],
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [477792], "id": 5}],
+        [{"jsonrpc": "2.0", "method": "getblock", "params": ["00000000000000000016ba7786309176445b838b36a16bd1ef3c3e3020473206"], "id": 6}],
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [478560], "id": 7}],
+        [{"jsonrpc": "2.0", "method": "getblock", "params": ["0000000000000000011865af4122fe3b144e2cbeea86142e8ff2fb4107352d43"], "id": 8}]
+    ],
+    "http_responses": [[
+        {
+            "error": null,
+            "result": "00000000000000000039554880558605684b37c3c7c403aff53d264b2cdb7a2a"
+        },
+        {
+            "error": null,
+            "result": "000000000000000000cdab0e2d7b8584babe2b549edf7bc5cb20830b5a6abec3"
+        },
+        {
+            "error": null,
+            "result": "000000000000000000752a685804a406978e39d62ba3ca5e1aa450eae938f896"
+        },
+        {
+            "error": null,
+            "result": "0000000000000000001f143fdbada82dca6d87d249d76654f0b6d3534b367d01"
+        }
+    ],[
+        {
+            "error": null,
+            "result": {
+                "bits": "18014735",
+                "chainwork": "0000000000000000000000000000000000000000007456b41d9e6d1a5b0d191c",
+                "confirmations": 178333,
+                "difficulty": 860221984436.2223,
+                "hash": "00000000000000000039554880558605684b37c3c7c403aff53d264b2cdb7a2a",
+                "height": 478577,
+                "mediantime": 1501599167,
+                "merkleroot": "e6d505fa32f2456322b54149698bac3097020be227d24505431d20ac2d2b4da7",
+                "nTx": 747,
+                "nextblockhash": "000000000000000000cdab0e2d7b8584babe2b549edf7bc5cb20830b5a6abec3",
+                "nonce": 4137751289,
+                "previousblockhash": "00000000000000000112f7cecf078f3f166a1a30629ea8515baf190cc727ee29",
+                "size": 336914,
+                "strippedsize": 336914,
+                "time": 1501601151,
+                "tx": [],
+                "version": 536870914,
+                "versionHex": "20000002",
+                "weight": 1347656
+            }
+        },
+        {
+            "error": null,
+            "result": {
+                "bits": "18014735",
+                "chainwork": "00000000000000000000000000000000000000000074577c67a085d0acab51aa",
+                "confirmations": 178332,
+                "difficulty": 860221984436.2223,
+                "hash": "000000000000000000cdab0e2d7b8584babe2b549edf7bc5cb20830b5a6abec3",
+                "height": 478578,
+                "mediantime": 1501599263,
+                "merkleroot": "3c2c4cbf5cc2e90b813226cc704390107e7243966cddf1448f8d77435e5fe457",
+                "nTx": 467,
+                "nextblockhash": "000000000000000000752a685804a406978e39d62ba3ca5e1aa450eae938f896",
+                "nonce": 1806366357,
+                "previousblockhash": "00000000000000000039554880558605684b37c3c7c403aff53d264b2cdb7a2a",
+                "size": 374545,
+                "strippedsize": 374545,
+                "time": 1501601570,
+                "tx": [],
+                "version": 536870914,
+                "versionHex": "20000002",
+                "weight": 1498180
+            }
+        },
+        {
+            "error": null,
+            "result": {
+                "bits": "18014735",
+                "chainwork": "000000000000000000000000000000000000000000745844b1a29e86fe498a38",
+                "confirmations": 178331,
+                "difficulty": 860221984436.2223,
+                "hash": "000000000000000000752a685804a406978e39d62ba3ca5e1aa450eae938f896",
+                "height": 478579,
+                "mediantime": 1501599371,
+                "merkleroot": "9c70bb7d5b19e7ee783c8f9e7032f280ad5a988741a9ea14eeec0ea2e7113451",
+                "nTx": 436,
+                "nextblockhash": "0000000000000000001f143fdbada82dca6d87d249d76654f0b6d3534b367d01",
+                "nonce": 354816659,
+                "previousblockhash": "000000000000000000cdab0e2d7b8584babe2b549edf7bc5cb20830b5a6abec3",
+                "size": 257552,
+                "strippedsize": 257552,
+                "time": 1501601759,
+                "tx": [],
+                "version": 536870914,
+                "versionHex": "20000002",
+                "weight": 1030208
+            }
+        },
+        {
+            "error": null,
+            "result": {
+                "bits": "18014735",
+                "chainwork": "00000000000000000000000000000000000000000074590cfba4b73d4fe7c2c6",
+                "confirmations": 178330,
+                "difficulty": 860221984436.2223,
+                "hash": "0000000000000000001f143fdbada82dca6d87d249d76654f0b6d3534b367d01",
+                "height": 478580,
+                "mediantime": 1501599883,
+                "merkleroot": "084ccf0d9e658660870905d643f211265d54a94f408138ff757225316f1fd74d",
+                "nTx": 1,
+                "nextblockhash": "0000000000000000003a3c6e60c17a79e70352c5b04b1307f6a3101d1d10b3be",
+                "nonce": 2452142276,
+                "previousblockhash": "000000000000000000752a685804a406978e39d62ba3ca5e1aa450eae938f896",
+                "size": 308,
+                "strippedsize": 308,
+                "time": 1501601761,
+                "tx": [],
+                "version": 536870914,
+                "versionHex": "20000002",
+                "weight": 1232
+            }
+        }
+    ], [
+        { "result": "00000000000000000016ba7786309176445b838b36a16bd1ef3c3e3020473206", "error": null}
+    ],[
+        {
+            "error": null,
+            "result": {
+                "bits": "18014735",
+                "chainwork": "00000000000000000000000000000000000000000071f0892d30a60a14e1adae",
+                "confirmations": 177346,
+                "difficulty": 860221984436.2223,
+                "hash": "00000000000000000016ba7786309176445b838b36a16bd1ef3c3e3020473206",
+                "height": 477792,
+                "mediantime": 1501152379,
+                "merkleroot": "28e3ae14925aeead5b44a885bca88e06ec37483ae905e65d57aa8cd60cb74b2f",
+                "nTx": 577,
+                "nextblockhash": "000000000000000000c2595cdb44abb833be0140a3a90aeedcea524b0b106965",
+                "nonce": 165193412,
+                "previousblockhash": "0000000000000000010e0373719b7538e713e47d8d7189826dce4264d85a79b8",
+                "size": 304171,
+                "strippedsize": 304171,
+                "time": 1501153434,
+                "tx": [],
+                "version": 536870914,
+                "versionHex": "20000002",
+                "weight": 1216684
+            }
+        }
+    ],[
+        { "result": "00000000000000000112f7cecf078f3f166a1a30629ea8515baf190cc727ee29", "error": null}
+    ],[
+        {
+            "error": null,
+            "result": {
+                "bits": "18014735",
+                "chainwork": "0000000000000000000000000000000000000000007455ebd39c5464096ee08e",
+                "confirmations": 178334,
+                "difficulty": 860221984436.2223,
+                "hash": "00000000000000000112f7cecf078f3f166a1a30629ea8515baf190cc727ee29",
+                "height": 478576,
+                "mediantime": 1501599024,
+                "merkleroot": "cd56c424731851f4c0781ca3cf515383329cc32fc9ac6f7dbbe10e32c2b90699",
+                "nTx": 965,
+                "nextblockhash": "00000000000000000039554880558605684b37c3c7c403aff53d264b2cdb7a2a",
+                "nonce": 1032946718,
+                "previousblockhash": "000000000000000000c982592c81fae35fbfc3eff1085caf3691889f0f1b7c65",
+                "size": 615113,
+                "strippedsize": 615113,
+                "time": 1501600617,
+                "tx": [],
+                "version": 536870930,
+                "versionHex": "20000012",
+                "weight": 2460452
+            }
+        }
+    ]]   
+}

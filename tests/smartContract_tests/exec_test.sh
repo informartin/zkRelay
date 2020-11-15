@@ -3,8 +3,14 @@ contract_file_path="contracts/"
 cwd_smart_contracts="./../../"
 cwd_truffle="tests/smartContract_tests/"
 
+# TODO flag setzen koennen, das den compilier prozess forciert.
+
 # check if smart contract has changed
-if [[ ${cwd_smart_contracts}batch_verifier.sol -nt ${contract_file_path}batch_verifier_2.sol || ${cwd_smart_contracts}verifier.sol -nt ${contract_file_path}verifier_4_chainChallenge.sol ]]; then
+python3 test/prepare_for_exec_test.py
+if [[ ${cwd_smart_contracts}batch_verifier.sol -ef ./test/test_data/batch_verifier_reference.sol ]]; then
+    # update reference batch_verifier
+    cp ${cwd_smart_contracts}batch_verifier.sol ./../test_data/test_smartContract/batch_verifier_reference.sol
+
     echo "Generating and compiling smart contracts and validating batches:"
     batch_sizes=(2 4)
     batch_count=(1 0)
@@ -64,14 +70,24 @@ if [[ ${cwd_smart_contracts}batch_verifier.sol -nt ${contract_file_path}batch_ve
     ## zkRelay validate ${batch_counter}
     python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119640 "correct_4_119640.json"
     python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119641 "correct_4_119641.json"
+    python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119642 "correct_4_119642.json"
+    python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119643 "correct_4_119643.json"
+    python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119644 "correct_4_119644.json"
+    python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119645 "correct_4_119645.json"
 
     ## Copy proofs to smartContract folder
     cp output/proof119640.json ${cwd_truffle}test/test_data/correct_proof_4_119640.json
     cp output/proof119641.json ${cwd_truffle}test/test_data/correct_proof_4_119641.json
+    cp output/proof119642.json ${cwd_truffle}test/test_data/correct_proof_4_119642.json
+    cp output/proof119643.json ${cwd_truffle}test/test_data/correct_proof_4_119643.json
+    cp output/proof119644.json ${cwd_truffle}test/test_data/correct_proof_4_119644.json
+    cp output/proof119645.json ${cwd_truffle}test/test_data/correct_proof_4_119645.json
 
     ## execute for fork
     python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119640 "correct_4_119640_bitcoin_cash.json"
     cp output/proof119640.json ${cwd_truffle}test/test_data/correct_proof_4_119640_bitcoin_cash.json
+    python3 ${cwd_truffle}/test/compile_SM_validate_batch.py 4 119641 "correct_4_119641_bitcoin_cash.json"
+    cp output/proof119641.json ${cwd_truffle}test/test_data/correct_proof_4_119641_bitcoin_cash.json
 
     cp batch_verifier.sol ${cwd_truffle}${contract_file_path}batch_verifier_4_chainChallenge.sol
     cp verifier.sol ${cwd_truffle}${contract_file_path}verifier_4_chainChallenge.sol

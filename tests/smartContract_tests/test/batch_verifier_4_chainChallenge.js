@@ -98,7 +98,7 @@ contract('BatchVerifier4_chainChallenge', (accounts) => {
         // submit batch to smart contract
         await expectRevert(
             batch_verifier_instance.createMainChainChallenge(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1),
-            'could not verify tx.'
+            'Could not verify tx.'
         );
     });
 
@@ -114,7 +114,7 @@ contract('BatchVerifier4_chainChallenge', (accounts) => {
 
         await expectRevert(
             batch_verifier_instance.addBatchToChallenge(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1),
-            'could not verify tx.'
+            'Could not verify tx.'
         );
     });
 
@@ -201,6 +201,55 @@ contract('BatchVerifier4_chainChallenge', (accounts) => {
         receipt = await batch_verifier_instance.getLatestBlockHash(0);
 
         expect(receipt).to.be.bignumber.equal(new BN('76897399149429910857920006940948127779674830872108457539135840393891636314112'));
+    });
+
+    it('should settleChallenge with longer chain', async () => {
+        // first, add data to mainChain
+        let data;
+        let receipt;
+        for (let i = 0; i < 2; i++) {
+            // get test_data
+            data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_11964${i}_bitcoin_cash.json`, 'utf-8'));
+
+            // submit batch to smart contract
+            receipt = await batch_verifier_instance.submitBatch(data.proof.a, data.proof.b, data.proof.c, data.inputs);
+
+            // check for event
+            expectEvent(receipt, 'AddedNewBatch', { '0': new BN(i + 1) });
+        }
+        
+        // second, create mainChainChallenge
+        // get test_data
+        data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119640.json`, 'utf-8'));
+
+        // submit batch to smart contract
+        receipt = await batch_verifier_instance.createMainChainChallenge(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1);
+
+        // third, add much more data to challenging chain
+        for (let i = 1; i < 6; i++) {
+            // get test_data
+            data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_11964${i}.json`, 'utf-8'));
+
+            // submit batch to smart contract
+            receipt = await batch_verifier_instance.addBatchToChallenge(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1);
+
+            // check for event 
+            expectEvent(receipt, 'AddedNewBatchToChallenge', { '0': new BN(1), '1': new BN(1 + i) });
+        }
+
+        // check for latest block hash on side chain
+        receipt = await batch_verifier_instance.getLatestBlockHash(1);
+        expect(receipt).to.be.bignumber.equal(new BN('673543456807305701500678383248570431861705562909382717589122311334867763200'))
+
+        // fourth, exec settle settleChallenge
+        receipt = await batch_verifier_instance.settleChallenge(1);
+
+        expectEvent(receipt, 'SettledChallenge', { '0': new BN(1) });
+
+        // check for latest block hash
+        receipt = await batch_verifier_instance.getLatestBlockHash(0);
+
+        expect(receipt).to.be.bignumber.equal(new BN('673543456807305701500678383248570431861705562909382717589122311334867763200'));
     });
 
     it('should not settleChallenge if not enough proof of work', async () => {
