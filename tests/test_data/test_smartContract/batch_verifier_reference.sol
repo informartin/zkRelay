@@ -135,14 +135,20 @@ contract BatchVerifier {
         require(verifyBatchCorrectness(a, b, c, input, 0, batchHeight, 0), 'Could not verify batch for challenging fork.');
 
         Branch storage challengeChain = branches[numBranches];
-        Batch storage genesisBatch = challengeChain.batchChain[challengeChain.numBatchChain++];
         Batch storage batch = challengeChain.batchChain[challengeChain.numBatchChain];
         challengeChain.startingAtBatchHeight = batchHeight;
 
-        // add 'genesis block' to new challenging chain
-        genesisBatch.cumDifficulty = branches[0].batchChain[batchHeight - 1].cumDifficulty;
-
-        createBatch(input, challengeChain, batch);
+        // create initial batch for challenging chain
+        // not using createBatch() because of different calculation of cumDifficulty
+        uint256 blockHash = from128To256(input[10], input[11]);
+        uint256 difficulty = difficultyFromTarget(input[12]);
+        uint256 merkleRoot = from128To256(input[13], input[14]);
+        
+        batch.headerHash = blockHash;
+        batch.cumDifficulty = branches[0].batchChain[batchHeight - 1].cumDifficulty + difficulty;
+        batch.merkleRoot = merkleRoot;
+        batch.blockHeader = [input[3], input[4], input[5], input[6], input[7]];
+        challengeChain.numBatchChain++;
 
         emit AddedNewChallenge(numBranches);
         
@@ -165,8 +171,7 @@ contract BatchVerifier {
 
         createBatch(input, challengeChain, batch);
 
-        // -1 because of 'genesis block' on challenging chain
-        emit AddedNewBatchToChallenge(challengeId, branches[challengeId].numBatchChain - 1);
+        emit AddedNewBatchToChallenge(challengeId, branches[challengeId].numBatchChain);
 
         return true;
     }
@@ -180,16 +185,17 @@ contract BatchVerifier {
         Branch storage challengingBranch = branches[challengeId];
         for(uint256 i = branches[challengeId].startingAtBatchHeight; i <= branches[challengeId].numBatchChain; i++) {
             // overwriting chain with blocks of challenging chain
-            // +1 because of 'genesis block' on challenging chain
-            mainBranch.batchChain[i] = challengingBranch.batchChain[i - challengingBranch.startingAtBatchHeight + 1];
+            branches[0].batchChain[i] = branches[challengeId].batchChain[i - branches[challengeId].startingAtBatchHeight];
 
             // deleting blocks from challenging chain as they are no longer needed
             delete challengingBranch.batchChain[i - challengingBranch.startingAtBatchHeight];
         }
 
-        // update numBatchChain of main chain to new length
-        // -1 because of 'genesis block' on challenging chain
-        mainBranch.numBatchChain = challengingBranch.startingAtBatchHeight + challengingBranch.numBatchChain - 1;
+        // update numBatchChain to new length
+        uint length_challengingBranch = challengingBranch.startingAtBatchHeight + challengingBranch.numBatchChain;
+        if (length_challengingBranch > mainBranch.numBatchChain) {
+            mainBranch.numBatchChain = length_challengingBranch;
+        }
 
         delete branches[challengeId];
 
@@ -229,6 +235,8 @@ contract BatchVerifier {
             Batch storage batch = branches[0].batchChain[batchNo];
             require(batch.merkleRoot == merkleRoot, 'Merkle root of request is not the same as merkle root of batch');
             batch.intermediaryHeader[headerHash] = [input[0], input[1], input[2], input[3], input[4]];
+
+            emit AddedNewIntermediaryBlock(batchNo, headerHash);
         }
 
     function difficultyFromTarget(uint256 target) private pure returns (uint256) {
@@ -265,5 +273,6 @@ contract BatchVerifier {
     event AddedNewBatch(uint256 batchHeight);
     event AddedNewChallenge(uint256 challengeID);
     event AddedNewBatchToChallenge(uint256 challengeID, uint256 batchHeight);
+    event AddedNewIntermediaryBlock(uint256 batchNo, uint256 headerHash);
     event SettledChallenge(uint256 challengeID);
 }

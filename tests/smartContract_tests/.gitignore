@@ -4,4 +4,5 @@ package-lock.json
 *sol
 !Migrations.sol
 *.json
-!outdated*
+!outdated*.json
+!conf*.json

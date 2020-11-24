@@ -45,6 +45,7 @@ def setup_merkle_proof_test_environment(batch_size, batch_no, verbose=False):
     # rm output files from earlier tests
     verbose_output = subprocess.DEVNULL if verbose is False else None
     subprocess.run(['rm', 'mk_tree_validation/witness'], check=False, stdout=verbose_output)
+    subprocess.run(['rm', 'mk_tree_validation/proof.json'], check=False, stdout=verbose_output)
 
     setup_validate_test_environment(batch_size, batch_no, verbose)
 
