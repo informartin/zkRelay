@@ -205,7 +205,7 @@ def validate_block_header(u32 reference_target, u32[8] prev_block_hash, u32[20] 
 return r
 
 //reference target[1..2] = epoch head [32..96]
-def main(field epoch_head, u32[8] prev_block_hash, private u32[20][20] intermediate_blocks, u32[20] final_block) -> (field[7]):
+def main(field epoch_head, u32[8] prev_block_hash, private u32[3][20] intermediate_blocks, u32[20] final_block) -> (field[7]):
     /*
       bool[32] unpacked_raw_target = u32_to_bits(raw_target)
       // converting to big endian is not necessary here, as it is compared to a little endian encoding
@@ -221,7 +221,7 @@ def main(field epoch_head, u32[8] prev_block_hash, private u32[20][20] intermedi
 
     u32[8] block_hash = prev_block_hash
     
-    for field i in 0..22 do
+    for field i in 0..3 do
       block_hash = validate_block_header(reference_target, block_hash, intermediate_blocks[i])
     endfor
     
