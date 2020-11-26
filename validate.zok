@@ -98,10 +98,23 @@ def packTarget(bool[32] bits) -> (field):
       fi \
     fi
 return result
+/*
+def packTarget(bool[32] bits) -> (field):
+    u32 result = 0
+    result if pack_128_bool_to_field == 23 then pack_128_bool_to_field([...[0; 72], ...bits[8..32], ...[0; 32]]) else result
+    result if pack_128_bool_to_field == 24 then pack_128_bool_to_field([...[0; 64], ...bits[8..32], ...[0; 40]]) else result
+    result if pack_128_bool_to_field == 25 then pack_128_bool_to_field([...[0; 56], ...bits[8..32], ...[0; 48]]) else result
+    result if pack_128_bool_to_field == 26 then pack_128_bool_to_field([...[0; 48], ...bits[8..32], ...[0; 56]]) else result
+    result if pack_128_bool_to_field == 27 then pack_128_bool_to_field([...[0; 40], ...bits[8..32], ...[0; 64]]) else result
+    result if pack_128_bool_to_field == 28 then pack_128_bool_to_field([...[0; 32], ...bits[8..32], ...[0; 72]]) else result
+    result if pack_128_bool_to_field == 29 then pack_128_bool_to_field([...[0; 24], ...bits[8..32], ...[0; 80]]) else result
+    result if pack_128_bool_to_field == 30 then pack_128_bool_to_field([...[0; 16], ...bits[8..32], ...[0; 88]]) else result
+    result if pack_128_bool_to_field == 31 then pack_128_bool_to_field([...[0; 8], ...bits[8..32], ...[0; 96]]) else result
+*/
 
 def get_bit_length_bits(bool[24] bits) -> (field):
     field result = 0
-    for field i in 0..24 do
+    for field i in 0..25 do
         result = if (result == 0) && (bits[i] == true) then 24-i else result fi
     endfor
 return result
@@ -146,7 +159,28 @@ def validate_target(field epoch_head, u32 epoch_tail, u32 next_epoch_head) -> (f
     field valid = if delta <= maxVariance then 1 else 0 fi
     //field valid = if (37202390668975264121251936602161152-81015268229227203625641762304819200) < 1267650600228229401496703205375 then 1 else 0 fi
 return [valid, current_target]
+/*
+def hash_block_header(field[5] preimage) -> (field[2]):
+    field[128] a = unpack128(preimage[0])
+    field[128] b = unpack128(preimage[1])
+    field[128] c = unpack128(preimage[2])
+    field[128] d = unpack128(preimage[3])
+    field[128] e = unpack128(preimage[4])
 
+    field[256] preimage1 = [...a, ...b]
+    field[256] preimage2 = [...c, ...d]
+    field[256] preimage3 = [...[...e, 1], ...[0; 127]]
+    field[256] dummy = [...[0; 246], ...[1, 0, 1, 0, 0, 0, 0, 0, 0, 0]] //second array indicates length of preimage = 640bit
+
+    field[256] intermediary = sha256for1024(preimage1, preimage2, preimage3, dummy)
+
+    field[256] r = sha256only(intermediary)
+
+    field res0 = pack128(r[0..128])
+    field res1 = pack128(r[128..256])
+
+return [res0, res1]
+*/
 
 def validate_block_header(u32 reference_target, u32[8] prev_block_hash, u32[20] preimage) -> (u32[8]):
   
@@ -171,7 +205,7 @@ def validate_block_header(u32 reference_target, u32[8] prev_block_hash, u32[20] 
 return r
 
 //reference target[1..2] = epoch head [32..96]
-def main(field epoch_head, u32[8] prev_block_hash, private u32[21][20] intermediate_blocks, u32[20] final_block) -> (field[7]):
+def main(field epoch_head, u32[8] prev_block_hash, private u32[20][20] intermediate_blocks, u32[20] final_block) -> (field[7]):
     /*
       bool[32] unpacked_raw_target = u32_to_bits(raw_target)
       // converting to big endian is not necessary here, as it is compared to a little endian encoding
@@ -185,37 +219,78 @@ def main(field epoch_head, u32[8] prev_block_hash, private u32[21][20] intermedi
     //u32[8] block1 = validate_block_header(reference_target, prev_block_hash, intermediate_blocks[0])
     //u32[8] block2 = validate_block_header(reference_target, block1, intermediate_blocks[1])
 
-    u32[3][8] block_hash = [[0x00000000; 8]; 3]
-    block_hash[0] = validate_block_header(reference_target, prev_block_hash, intermediate_blocks[0])
-    for field i in 1..21 do
-      block_hash[i] = validate_block_header(reference_target, block_hash[i-1], intermediate_blocks[i])
+    u32[8] block_hash = prev_block_hash
+    
+    for field i in 0..22 do
+      block_hash = validate_block_header(reference_target, block_hash, intermediate_blocks[i])
     endfor
-
+    
 /*
-    u32[8] block_hash0 = validate_block_header(reference_target, prev_block_hash, intermediate_blocks[0])
-    u32[8] block_hash1 = validate_block_header(reference_target, block_hash0, intermediate_blocks[1])
-    u32[8] block_hash2 = validate_block_header(reference_target, block_hash1, intermediate_blocks[2])
-    u32[8] block_hash3 = validate_block_header(reference_target, block_hash2, intermediate_blocks[3])
-    u32[8] block_hash4 = validate_block_header(reference_target, block_hash3, intermediate_blocks[4])
-    u32[8] block_hash5 = validate_block_header(reference_target, block_hash4, intermediate_blocks[5])
-    u32[8] block_hash6 = validate_block_header(reference_target, block_hash5, intermediate_blocks[6])
-    u32[8] block_hash7 = validate_block_header(reference_target, block_hash6, intermediate_blocks[7])
-    u32[8] block_hash8 = validate_block_header(reference_target, block_hash7, intermediate_blocks[8])
-    u32[8] block_hash9 = validate_block_header(reference_target, block_hash8, intermediate_blocks[9])
-    u32[8] block_hash10 = validate_block_header(reference_target, block_hash9, intermediate_blocks[10])
-    u32[8] block_hash11 = validate_block_header(reference_target, block_hash10, intermediate_blocks[11])
-    u32[8] block_hash12 = validate_block_header(reference_target, block_hash11, intermediate_blocks[12])
-    u32[8] block_hash13 = validate_block_header(reference_target, block_hash12, intermediate_blocks[13])
-    u32[8] block_hash14 = validate_block_header(reference_target, block_hash13, intermediate_blocks[14])
-    u32[8] block_hash15 = validate_block_header(reference_target, block_hash14, intermediate_blocks[15])
-    u32[8] block_hash16 = validate_block_header(reference_target, block_hash15, intermediate_blocks[16])
-    u32[8] block_hash17 = validate_block_header(reference_target, block_hash16, intermediate_blocks[17])
-    u32[8] block_hash18 = validate_block_header(reference_target, block_hash17, intermediate_blocks[18])
-    u32[8] block_hash19 = validate_block_header(reference_target, block_hash18, intermediate_blocks[19])
-    u32[8] block_hash20 = validate_block_header(reference_target, block_hash19, intermediate_blocks[20])
-    u32[8] block_hash21 = validate_block_header(reference_target, block_hash20, intermediate_blocks[21])
+    field[257] block2 = validate_block_header(reference_target, block1[1..9], intermediate_blocks[1])
+    result = if block2[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block3 = validate_block_header(reference_target, block2[1..257], intermediate_blocks[2])
+    result = if block3[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block4 = validate_block_header(reference_target, block3[1..257], intermediate_blocks[3])
+    result = if block4[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block5 = validate_block_header(reference_target, block4[1..257], intermediate_blocks[4])
+    result = if block5[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block6 = validate_block_header(reference_target, block5[1..257], intermediate_blocks[5])
+    result = if block6[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block7 = validate_block_header(reference_target, block6[1..257], intermediate_blocks[6])
+    result = if block7[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block8 = validate_block_header(reference_target, block7[1..257], intermediate_blocks[7])
+    result = if block8[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block9 = validate_block_header(reference_target, block8[1..257], intermediate_blocks[8])
+    result = if block9[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block10 = validate_block_header(reference_target, block9[1..257], intermediate_blocks[9])
+    result = if block10[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block11 = validate_block_header(reference_target, block10[1..257], intermediate_blocks[10])
+    result = if block11[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block12 = validate_block_header(reference_target, block11[1..257], intermediate_blocks[11])
+    result = if block12[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block13 = validate_block_header(reference_target, block12[1..257], intermediate_blocks[12])
+    result = if block13[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block14 = validate_block_header(reference_target, block13[1..257], intermediate_blocks[13])
+    result = if block14[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block15 = validate_block_header(reference_target, block14[1..257], intermediate_blocks[14])
+    result = if block15[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block16 = validate_block_header(reference_target, block15[1..257], intermediate_blocks[15])
+    result = if block16[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block17 = validate_block_header(reference_target, block16[1..257], intermediate_blocks[16])
+    result = if block17[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block18 = validate_block_header(reference_target, block17[1..257], intermediate_blocks[17])
+    result = if block18[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block19 = validate_block_header(reference_target, block18[1..257], intermediate_blocks[18])
+    result = if block19[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[257] block20 = validate_block_header(reference_target, block19[1..257], intermediate_blocks[19])
+    result = if block20[0] == 0 || result == 0 then 0 else 1 fi
+
+    field[128] e = unpack128(final_block[4]) //TODO: Clean up, dirty mirty
+    field[257] block21 = validate_block_header(pack128([...[0; 96], ...e[64..96]]), block20[1..257], final_block)
+    result = if block21[0] == 0 || result == 0 then 0 else 1 fi
 */
+    //field[2] target_is_valid = validate_target(epoch_head, intermediate_blocks[19][17], final_block[18])
+
     //field[2] merkle_root = compute_merkle_root([block1[1..257],block2[1..257],block3[1..257],block4[1..257],block5[1..257],block6[1..257],block7[1..257],block8[1..257],block9[1..257],block10[1..257],block11[1..257],block12[1..257],block13[1..257],block14[1..257],block15[1..257],block16[1..257],block17[1..257],block18[1..257],block19[1..257],block20[1..257],block21[1..257]])
+//    field[2] merkle_root = [1,1]
 //return [result, target_is_valid[0], ...block21[1..3], target_is_valid[1], ...merkle_root]
 
 return [1,1,1,1,1,1,1]
