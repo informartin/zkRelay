@@ -73,7 +73,7 @@ contract('BatchVerifier4_chainChallenge', (accounts) => {
         expect(receipt[4]).to.be.bignumber.equal(new BN('119130702145458319987686862029185616026'), 'block header hash[4] of the intermediary block is not the expected one.');
     });
 
-    it('should not accept a valid but wrong merkle proof. (third block in a batch of 4 of batch_no=119640) (block_no = 478559)', async () => {
+    it('should not accept a merkle proof from another verifier (third block in a batch of 4 of batch_no=119640) (block_no = 478559)', async () => {
         // get test_data
         let data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119640.json`, 'utf-8'));
 
@@ -90,6 +90,54 @@ contract('BatchVerifier4_chainChallenge', (accounts) => {
         await expectRevert(
             batch_verifier_instance.submitIntermediaryBlock(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1),
             'Could not verify tx'
+        );
+    });
+
+    it('should not accept a valid merkle proof from another batch', async () => {
+        // get test_data
+        let data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119640.json`, 'utf-8'));
+
+        // submit batch to smart contract
+        let receipt = await batch_verifier_instance.submitBatch(data.proof.a, data.proof.b, data.proof.c, data.inputs);
+
+        // check for event
+        expectEvent(receipt, 'AddedNewBatch', { '0': new BN(1) });
+
+        // get test_data
+        data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119644_merkle_proof_block_3.json`, 'utf-8'));
+
+        await expectRevert.unspecified(
+            batch_verifier_instance.submitIntermediaryBlock(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1)
+        );
+    });
+
+    it('should not accept a merkle proof that was already submitted', async () => {
+        // get test_data
+        let data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119640.json`, 'utf-8'));
+
+        // submit batch to smart contract
+        let receipt = await batch_verifier_instance.submitBatch(data.proof.a, data.proof.b, data.proof.c, data.inputs);
+
+        // check for event
+        expectEvent(receipt, 'AddedNewBatch', { '0': new BN(1) });
+
+        // get test_data
+        data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119640_merkle_proof_block_3.json`, 'utf-8'));
+
+        // submit merkle proof to smart contract
+        receipt = await batch_verifier_instance.submitIntermediaryBlock(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1);
+
+        await expectRevert.unspecified(
+            batch_verifier_instance.submitIntermediaryBlock(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1)
+        );
+    });
+
+    it('should not accept a merkle proof of a batch that was not submitted until now', async () => {
+        // get test_data
+        let data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119640_merkle_proof_block_3.json`, 'utf-8'));
+
+        await expectRevert.unspecified(
+            batch_verifier_instance.submitIntermediaryBlock(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1)
         );
     });
 });
