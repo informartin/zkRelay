@@ -132,11 +132,18 @@ Furthermore it sets the editable flag when installing. That way, source files ar
 together and used for execution of the CLI. Changes in source files can therefor directly get tested
 and used without having to install zkRelay again.
 
+We use the truffle test suite for our smart contract test cases. Before you can execute the tests, you need to go to the smartContract_test folder and install all required packages:
+
+```bash
+$ cd {Project_root}/tests/smartContract_tests
+$ npm install
+```
+
 ### Tests
 
-## Python Scripts
+#### Python Scripts
 
-We use the unittest module for our test cases. You can execute all tests with the following command:
+We use the module `unittest` for our test cases. You can execute all tests with the following command:
 
 ``` bash
 $ python3 -m unittest
@@ -156,17 +163,11 @@ If you only want to test one test case, e.g. test_7_crossover_of_epochs, your co
 $ python -m unittest tests.cmd_validate_tests.test_malicious_blocks.TestMaliciousBlocks.test_7_crossover_of_epochs
 ```
 
-## Smart Contract
+#### Smart Contract
 
-We use the truffle test suite for our test cases. Before you can execute the tests, you need to go to the smartContract_test folder and install all required packages:
-
-``` bash
-$ cd {Project_Root}/tests/smartContract_tests/
-$ npm install
-```
-
-Then, you can execute all tests with the following command:
+You can execute tests for the smart contracts inside of the smartContract_tests folder with the following commands:
 
 ``` bash
+$ cd {Project_root}/tests/smartContract_tests/
 $ npm run test
 ```
