@@ -135,20 +135,14 @@ contract BatchVerifier {
         require(verifyBatchCorrectness(a, b, c, input, 0, batchHeight, 0), 'Could not verify batch for challenging fork.');
 
         Branch storage challengeChain = branches[numBranches];
+        Batch storage genesisBatch = challengeChain.batchChain[challengeChain.numBatchChain++];
         Batch storage batch = challengeChain.batchChain[challengeChain.numBatchChain];
         challengeChain.startingAtBatchHeight = batchHeight;
-
-        // create initial batch for challenging chain
-        // not using createBatch() because of different calculation of cumDifficulty
-        uint256 blockHash = from128To256(input[10], input[11]);
-        uint256 difficulty = difficultyFromTarget(input[12]);
-        uint256 merkleRoot = from128To256(input[13], input[14]);
         
-        batch.headerHash = blockHash;
-        batch.cumDifficulty = branches[0].batchChain[batchHeight - 1].cumDifficulty + difficulty;
-        batch.merkleRoot = merkleRoot;
-        batch.blockHeader = [input[3], input[4], input[5], input[6], input[7]];
-        challengeChain.numBatchChain++;
+        // add 'genesis block' to new challenging chain
+        genesisBatch.cumDifficulty = branches[0].batchChain[batchHeight - 1].cumDifficulty;
+
+        createBatch(input, challengeChain, batch);
 
         emit AddedNewChallenge(numBranches);
         
@@ -171,7 +165,8 @@ contract BatchVerifier {
 
         createBatch(input, challengeChain, batch);
 
-        emit AddedNewBatchToChallenge(challengeId, branches[challengeId].numBatchChain);
+        // -1 because of 'genesis block' on challenging chain
+        emit AddedNewBatchToChallenge(challengeId, branches[challengeId].numBatchChain - 1);
 
         return true;
     }
@@ -185,17 +180,16 @@ contract BatchVerifier {
         Branch storage challengingBranch = branches[challengeId];
         for(uint256 i = branches[challengeId].startingAtBatchHeight; i <= branches[challengeId].numBatchChain; i++) {
             // overwriting chain with blocks of challenging chain
-            branches[0].batchChain[i] = branches[challengeId].batchChain[i - branches[challengeId].startingAtBatchHeight];
+            // +1 because of 'genesis block' on challenging chain
+            mainBranch.batchChain[i] = challengingBranch.batchChain[i - challengingBranch.startingAtBatchHeight + 1];
 
             // deleting blocks from challenging chain as they are no longer needed
             delete challengingBranch.batchChain[i - challengingBranch.startingAtBatchHeight];
         }
 
-        // update numBatchChain to new length
-        uint length_challengingBranch = challengingBranch.startingAtBatchHeight + challengingBranch.numBatchChain;
-        if (length_challengingBranch > mainBranch.numBatchChain) {
-            mainBranch.numBatchChain = length_challengingBranch;
-        }
+        // update numBatchChain of main chain to new length
+        // -1 because of 'genesis block' on challenging chain
+        mainBranch.numBatchChain = challengingBranch.startingAtBatchHeight + challengingBranch.numBatchChain - 1;
 
         delete branches[challengeId];
 
