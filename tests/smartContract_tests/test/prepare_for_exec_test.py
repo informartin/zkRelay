@@ -2,7 +2,6 @@ import re
 import pathlib
 
 if __name__ == "__main__":
-    print(pathlib.Path().absolute())
     with open('./../../batch_verifier.sol', 'r') as r_batch_verifier_file:
         # get batch_size of smart contract and replace batch_size in reference contract
         curr_contract = r_batch_verifier_file.read()

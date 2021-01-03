@@ -5,7 +5,7 @@ cwd_truffle="tests/smartContract_tests/"
 
 # check if smart contract has changed
 python3 test/prepare_for_exec_test.py
-if [[ ${cwd_smart_contracts}batch_verifier.sol -ef ./test/test_data/batch_verifier_reference.sol || $1 == '-c' ]]; then
+if [[ ${cwd_smart_contracts}batch_verifier.sol -ef ./../test_data/test_smartContract/batch_verifier_reference.sol || $1 == '-c' ]]; then
     # update reference batch_verifier
     cp ${cwd_smart_contracts}batch_verifier.sol ./../test_data/test_smartContract/batch_verifier_reference.sol
 

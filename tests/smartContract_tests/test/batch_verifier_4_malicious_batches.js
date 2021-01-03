@@ -5,7 +5,7 @@ const { expect } = require('chai');
 
 const test_data_path = 'test/test_data/'
 
-contract('BatchVerifier4_chainChallenge', (accounts) => {
+contract('Malicious Batches', (accounts) => {
     let batch_verifier_instance;
 
     beforeEach(async() => {

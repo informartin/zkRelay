@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "bash exec_test.sh",
+    "test": "bash exec_test.sh -c",
+    "test_without_preparation": "bash exec_test.sh",
     "compile": "truffle compile"
   },
   "author": "Leonard Stutzer",

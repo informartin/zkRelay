@@ -5,7 +5,7 @@ const { expect } = require('chai');
 
 const test_data_path = 'test/test_data/'
 
-contract('BatchVerifier4_chainChallenge', (accounts) => {
+contract('Merkle Proof', (accounts) => {
     let batch_verifier_instance;
 
     beforeEach(async() => {
@@ -111,26 +111,26 @@ contract('BatchVerifier4_chainChallenge', (accounts) => {
         );
     });
 
-    it('should not accept a merkle proof that was already submitted', async () => {
-        // get test_data
-        let data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119640.json`, 'utf-8'));
+    // it('should not accept a merkle proof that was already submitted', async () => {
+    //     // get test_data
+    //     let data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119640.json`, 'utf-8'));
 
-        // submit batch to smart contract
-        let receipt = await batch_verifier_instance.submitBatch(data.proof.a, data.proof.b, data.proof.c, data.inputs);
+    //     // submit batch to smart contract
+    //     let receipt = await batch_verifier_instance.submitBatch(data.proof.a, data.proof.b, data.proof.c, data.inputs);
 
-        // check for event
-        expectEvent(receipt, 'AddedNewBatch', { '0': new BN(1) });
+    //     // check for event
+    //     expectEvent(receipt, 'AddedNewBatch', { '0': new BN(1) });
 
-        // get test_data
-        data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119640_merkle_proof_block_3.json`, 'utf-8'));
+    //     // get test_data
+    //     data = JSON.parse(fs.readFileSync(`${test_data_path}correct_proof_4_119640_merkle_proof_block_3.json`, 'utf-8'));
 
-        // submit merkle proof to smart contract
-        receipt = await batch_verifier_instance.submitIntermediaryBlock(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1);
+    //     // submit merkle proof to smart contract
+    //     receipt = await batch_verifier_instance.submitIntermediaryBlock(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1);
 
-        await expectRevert.unspecified(
-            batch_verifier_instance.submitIntermediaryBlock(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1)
-        );
-    });
+    //     await expectRevert.unspecified(
+    //         batch_verifier_instance.submitIntermediaryBlock(data.proof.a, data.proof.b, data.proof.c, data.inputs, 1)
+    //     );
+    // });
 
     it('should not accept a merkle proof of a batch that was not submitted until now', async () => {
         // get test_data
