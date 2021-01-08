@@ -11,7 +11,7 @@ import os
 from tests import test_helper
 
 class TestCorrectMerkleProofs(unittest.TestCase):
-    verbose = False
+    verbose = True
 
     def setUp(self):
         self.ctx = test_helper.Context()
@@ -32,7 +32,7 @@ class TestCorrectMerkleProofs(unittest.TestCase):
         for block_nr in range(first_block_in_batch, block_range):
             counter = (block_nr - 1) % batch_size
             
-            test_helper.exec_merkle_proof(self.ctx, 'test_proof/test_correct_proofs/batch_size_2_nr_{}.json'.format(counter), block_nr)
+            test_helper.exec_merkle_proof(self.ctx, 'test_proof/test_correct_proofs/batch_size_2_nr_{}.json'.format(counter), block_nr, self.verbose)
             
             with open('./mk_tree_validation/witness', 'r') as witness:
                 lines = witness.readlines()
@@ -58,7 +58,7 @@ class TestCorrectMerkleProofs(unittest.TestCase):
         for block_nr in range(first_block_in_batch, block_range):
             counter = (block_nr - 1) % batch_size
             
-            test_helper.exec_merkle_proof(self.ctx, 'test_proof/test_correct_proofs/batch_size_5_nr_{}.json'.format(counter), block_nr)
+            test_helper.exec_merkle_proof(self.ctx, 'test_proof/test_correct_proofs/batch_size_5_nr_{}.json'.format(counter), block_nr, verbose=self.verbose)
             
             with open('./mk_tree_validation/witness', 'r') as witness:
                 lines = witness.readlines()
@@ -84,7 +84,7 @@ class TestCorrectMerkleProofs(unittest.TestCase):
         for block_nr in range(first_block_in_batch, block_range):
             counter = (block_nr - 1) % batch_size
             
-            test_helper.exec_merkle_proof(self.ctx, 'test_proof/test_correct_proofs/batch_size_10_nr_{}.json'.format(counter), block_nr)
+            test_helper.exec_merkle_proof(self.ctx, 'test_proof/test_correct_proofs/batch_size_10_nr_{}.json'.format(counter), block_nr, self.verbose)
             
             with open('./mk_tree_validation/witness', 'r') as witness:
                 lines = witness.readlines()

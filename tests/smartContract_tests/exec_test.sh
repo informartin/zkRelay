@@ -44,8 +44,10 @@ if [[ ${cwd_smart_contracts}batch_verifier.sol -ef ./../test_data/test_smartCont
         cp verifier.sol ${cwd_truffle}${contract_file_path}verifier_${batch_sizes[$i]}.sol
 
         ## sol file in mk_tree_validation
-        zkRelay setup-merkle-proof > /dev/null 2>&1
+        echo "Exec zkRelay setup-merkle-proof"
+        zkRelay setup-merkle-proof #> /dev/null 2>&1
         cp mk_tree_validation/verifier.sol ${cwd_truffle}${contract_file_path}mk_tree_validation/verifier_${batch_sizes[$i]}.sol
+        echo "Done."
 
         # Go back to truffle directory
         cd ${cwd_truffle}
@@ -90,7 +92,7 @@ if [[ ${cwd_smart_contracts}batch_verifier.sol -ef ./../test_data/test_smartCont
 
     ## execute merkle proof setup and compiling
     ### setup merkle-proof
-    zkRelay setup-merkle-proof > /dev/null 2>&1
+    zkRelay setup-merkle-proof #> /dev/null 2>&1
     ### compile and copy merkle-proofs
     python3 ${cwd_truffle}/test/compile_sm_merkle_proof.py 478559 4 "correct_4_119640_merkle_proof_block_3.json"
     cp mk_tree_validation/proof.json ${cwd_truffle}test/test_data/correct_proof_4_119640_merkle_proof_block_3.json

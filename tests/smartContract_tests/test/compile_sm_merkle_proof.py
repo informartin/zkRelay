@@ -31,7 +31,7 @@ if __name__ == "__main__":
     batch_size = int(sys.argv[2])
     batch_no = int((block_no - ((block_no -1) % batch_size)) / batch_size) + 1
     conf_file_path = str(sys.argv[3])
-    verbose = False
+    verbose = True
 
     ctx = test_helper.Context()
     ctx.obj = toml.load('./tests/conf/local_conf.toml')

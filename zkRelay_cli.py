@@ -13,35 +13,48 @@ from termcolor import colored
 
 initColor()
 
+SUPPORTED_VERSION_ZOKRATES = '0.5.1'
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.option('-v', '--verbose',
+@click.option('-v', '--no-verbose',
                 is_flag=True,
-                help='verbose output')
+                help='disable verbose output')
 @click.option('-c',
                 '--config-file',
                 help='path to config file',
                 required=False,
                 type=click.STRING)
 @click.pass_context
-def zkRelay_cli(ctx, verbose, config_file):
+def zkRelay_cli(ctx, no_verbose, config_file):
     """
     For more information about a command
     use 'cli COMMAND [-h, --help]'
     """
+    # check if correct zokrates version is used. (currently supported 0.5.1)
+    result = subprocess.run(['zokrates', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if result.returncode is not 0:
+        print(colored('Was not able to execute zokrates.', 'red') + ' Did you install it? (currently supported version = {})'.format(SUPPORTED_VERSION_ZOKRATES))
+        exit(-1)
+    correct_version = re.search('.*{}'.format(SUPPORTED_VERSION_ZOKRATES), result.stdout.decode("utf-8"))
+    if correct_version is None:
+        curr_version = re.search('(\d+((\.\d+)?(\.\d+)?))', result.stdout.decode('utf-8'))
+        print(colored('Unsupported version of zokrates.({})'.format(curr_version.group(0)), 'red') + 'Currently supported: {}'.format(SUPPORTED_VERSION_ZOKRATES))
+        exit(-1)
+
     # load conf file to pass to cmds
     config_file_path = config_file if config_file is not None else './conf/zkRelay-cli.toml'
     ctx.obj = toml.load(config_file_path)
     ctx.obj['general']['config_file_path'] = config_file_path
 
     # check if verbose output is required
-    if verbose:
-        ctx.obj['general']['verbose_output'] = None
-        ctx.obj['general']['verbose'] = True
-    else:
+    if no_verbose:
         ctx.obj['general']['verbose_output'] = subprocess.DEVNULL
         ctx.obj['general']['verbose'] = False
+    else:
+        ctx.obj['general']['verbose_output'] = None
+        ctx.obj['general']['verbose'] = True
+        
 
 @zkRelay_cli.command('generate-files')
 @click.argument('batch_size',

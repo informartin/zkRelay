@@ -143,6 +143,8 @@ $ npm install
 
 #### Python Scripts
 
+NOTE: Make sure that you are on the project root in your terminal!
+
 We use the module `unittest` for our test cases. You can execute all tests with the following command:
 
 ``` bash

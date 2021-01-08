@@ -12,6 +12,7 @@ from tests import test_helper
 
 class TestWitnessCorrectBlocks(unittest.TestCase):
     conf_dir_path = 'test_witness/test_correct_blocks/'
+    verbose = True
 
     def setUp(self):
         self.ctx = test_helper.Context()
@@ -22,9 +23,9 @@ class TestWitnessCorrectBlocks(unittest.TestCase):
         batch_no = 1
 
         # check if required files are generated
-        test_helper.setup_validate_test_environment(batch_size, batch_no)
+        test_helper.setup_validate_test_environment(batch_size, batch_no, verbose=self.verbose)
 
-        test_helper.exec_compute_witness(self.ctx, '{}start_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no)
+        test_helper.exec_compute_witness(self.ctx, '{}start_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no, self.verbose)
         
         with open('./output/witness{}'.format(batch_no), 'r') as witness:
             lines = witness.readlines()
@@ -36,9 +37,9 @@ class TestWitnessCorrectBlocks(unittest.TestCase):
         batch_no = 403
 
         # check if required files are generated
-        test_helper.setup_validate_test_environment(batch_size, batch_no)
+        test_helper.setup_validate_test_environment(batch_size, batch_no, verbose=self.verbose)
 
-        test_helper.exec_compute_witness(self.ctx, '{}end_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no)
+        test_helper.exec_compute_witness(self.ctx, '{}end_of_epoch.json'.format(self.conf_dir_path), batch_size, batch_no, verbose=self.verbose)
         
         with open('./output/witness{}'.format(batch_no), 'r') as witness:
             lines = witness.readlines()
