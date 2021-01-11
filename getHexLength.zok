@@ -1,10 +1,10 @@
-import "utils/pack/unpack128.zok" as unpack128
+import "utils/pack/bool/unpack128.zok" as unpack_field_to_128_bool
 
 def get_bit_length(field word) -> (field):
-    field[128] unpacked_word = unpack128(word)
+    bool[128] unpacked_word = unpack_field_to_128_bool(word)
     field result = 0
     for field i in 0..128 do
-        result = if (result == 0) && (unpacked_word[i] == 1) then 128-i else result fi
+        result = if (result == 0) && (unpacked_word[i] == true) then 128-i else result fi
     endfor
 return result
 
