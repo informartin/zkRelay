@@ -2,6 +2,7 @@ def generate_validation_code(n_blocks):
     static_code = """import "EMBED/u32_to_bits" as u32_to_bits
 import "EMBED/u32_from_bits" as u32_from_bits
 import "utils/casts/u32_4_to_bool_128.zok" as u32_4_to_bool_128
+import "utils/pack/u32/pack128.zok" as u32_4_to_field
 import "utils/pack/bool/pack128.zok" as pack_128_bool_to_field
 import "utils/pack/bool/unpack128.zok" as unpack_field_to_128_bool
 import "utils/pack/u32/unpack128.zok" as unpack_field_to_4_u32
@@ -133,7 +134,8 @@ def validate_target(field epoch_head, u32 epoch_tail, u32 next_epoch_head) -> (b
     delta = if target >= encoded_target_extended then delta else maxVariance + 1 fi
     bool valid = if delta <= maxVariance then true else false fi
 return valid, current_target
-def validate_block_header(u32 reference_target, u32[8] prev_block_hash, u32[20] preimage) -> (u32[8]):
+def validate_block_header(u32 reference_target, u32[8] prev_block_hash, field[5] preimage_field) -> (u32[8]):
+   u32[20] preimage = [...unpack_field_to_4_u32(preimage_field[0]), ...unpack_field_to_4_u32(preimage_field[1]), ...unpack_field_to_4_u32(preimage_field[2]), ...unpack_field_to_4_u32(preimage_field[3]), ...unpack_field_to_4_u32(preimage_field[4])]
 	// preImage: [0] -> Block version, [1:8] -> prev_block_hash, [9:16] -> merkle root, [17:19] => time, target, nonce 
     assert(preimage[1] == prev_block_hash[0] && \\
             preimage[2] == prev_block_hash[1] && \\
@@ -153,10 +155,11 @@ return r
 """
     main_block = []
 
-    main_block.append("def main(field epoch_head, u32[8] prev_block_hash, private u32[{n_intermediate}][20] intermediate_blocks, u32[20] final_block) -> (bool, field, u32[8], u32[8]):".format(n_intermediate=(n_blocks-1)))
+    main_block.append("def main(field epoch_head, field[2] prev_block_hash, private field[{n_intermediate}][5] intermediate_blocks, field[5] final_block_field) -> (bool, field[5]):".format(n_intermediate=(n_blocks-1)))
     main_block.append("""
     u32 reference_target = unpack_field_to_4_u32(epoch_head)[2]
-    u32[8] block_hash = prev_block_hash
+    u32[8] block_hash = [...unpack_field_to_4_u32(prev_block_hash[0]), ...unpack_field_to_4_u32(prev_block_hash[1])]
+    u32 final_block_target = unpack_field_to_4_u32(final_block_field[4])[2]
     u32[{n_hashes}][8] blocks = [[0x00000000;8];{n_hashes}]
     for field i in 0..{n_intermediate} do
       block_hash = validate_block_header(reference_target, block_hash, intermediate_blocks[i])
@@ -164,10 +167,11 @@ return r
     endfor""".format(n_hashes=(n_blocks), n_intermediate=(n_blocks - 1)))
 
     main_block.append("""
-    block_hash = validate_block_header(final_block[18], block_hash, final_block)
+    block_hash = validate_block_header(final_block_target, block_hash, final_block_field)
     blocks[{n_intermediate}] = block_hash
-    bool targetValid, field target = validate_target(epoch_head, intermediate_blocks[0][17], final_block[18])
-    u32[8] merkle_root = compute_merkle_root(blocks)
-return targetValid, target, blocks[{n_intermediate}], merkle_root
+    bool targetValid, field target = validate_target(epoch_head, unpack_field_to_4_u32(intermediate_blocks[0][4])[1], final_block_target)
+    field[2] merkle_root = compute_merkle_root(blocks)
+    field[2] block = [u32_4_to_field(blocks[{n_intermediate}][0..4]), u32_4_to_field(blocks[{n_intermediate}][4..8])]
+return targetValid, [target, ...block, ...merkle_root]
     """.format(n_intermediate=(n_blocks - 1)))
     return static_code + "\n".join(main_block)

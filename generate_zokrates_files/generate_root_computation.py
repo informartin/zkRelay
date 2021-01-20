@@ -21,7 +21,8 @@ def generate_compute_root(number_leafs):
 
 def generate_root_code(number_leafs):
     output = ('import "hashes/pedersen/512bit.zok" as pedersenhash\n' +
-        'def main(u32[{number_leafs}][8] layer{layer}) -> (u32[8]):\n'.format(number_leafs=number_leafs,layer=math.ceil(math.log(number_leafs,2))) +
+            'import "utils/pack/u32/pack128.zok" as u32_4_to_field\n' +
+        'def main(u32[{number_leafs}][8] layer{layer}) -> (field[2]):\n'.format(number_leafs=number_leafs,layer=math.ceil(math.log(number_leafs,2))) +
         generate_compute_root(number_leafs) +
-        '\treturn layer0')
+        '\treturn [u32_4_to_field(layer0[0..4]), u32_4_to_field(layer0[4..8])]')
     return output
