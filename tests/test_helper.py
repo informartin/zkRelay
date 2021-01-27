@@ -92,11 +92,13 @@ def exec_compute_witness(ctx, conf_file_path, batch_size, batch_no, verbose=Fals
                 result = generateZokratesInputFromBlock(ctx, (batch_no-1)*batch_size+1, batch_size)
                 try:
                     command_list = ('zokrates compute-witness --light -a ' + result).split(' ')
-                    subprocess.run(command_list, stdout=verbose_output, check=True)
+                    outcome = subprocess.run(command_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    if (verbose): print(outcome.stdout.decode('utf-8'))
                     command_list = ('mv witness output/witness' + str(batch_no)).split(' ')
-                    subprocess.run(command_list, stdout=verbose_output, check=True)
+                    subprocess.run(command_list, stdout=verbose_output)
+                    return outcome
                 except subprocess.CalledProcessError:
-                    return False
+                    return None
         except:
             print('There was probably a problem with the http server.')
             print(sys.exc_info())

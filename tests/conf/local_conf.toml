@@ -4,9 +4,9 @@ title = "local test config file"
 
 [bitcoin_client]
 host = "localhost"
-port = "8333"
+port = "8444"
 user = "testUser"
 pwd = "testPwd"
 
 [zokrates_file_generator]
-batch_size = 5
+batch_size = 4
