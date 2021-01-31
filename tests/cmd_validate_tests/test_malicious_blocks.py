@@ -27,11 +27,13 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated
         test_helper.setup_validate_test_environment(BATCH_SIZE, BATCH_NO, verbose=self.verbose)
 
-        result = test_helper.exec_compute_witness(self.ctx, '{}malicious_merkle_root.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO, verbose=self.verbose)
+        test_helper.exec_compute_witness(self.ctx, '{}malicious_merkle_root.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO, verbose=self.verbose)
         
         # checking if output found error with help of regex
-        check = re.search('Execution failed', result.stdout.decode('utf-8'))
-        self.assertIsNotNone(check, 'malicious merkle roots of blocks in batch were accepted')
+        with open('./output/witness1', 'r') as witness:
+            lines = witness.readlines()
+            check = re.match('^~out_0 0$', lines[6])
+            self.assertIsNotNone(check, 'malicious merkle roots of blocks in batch were accepted')
 
     def test_2_malicious_blocks_version_hex(self):
         """
@@ -42,11 +44,13 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         test_helper.setup_validate_test_environment(BATCH_SIZE, BATCH_NO, verbose=self.verbose)
 
-        result = test_helper.exec_compute_witness(self.ctx, '{}malicious_blocks_version_hex.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO, verbose=self.verbose)
+        test_helper.exec_compute_witness(self.ctx, '{}malicious_blocks_version_hex.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO, verbose=self.verbose)
         
         # checking if output found error with help of regex
-        check = re.search('Execution failed', result.stdout.decode('utf-8'))
-        self.assertIsNotNone(check, 'malicious version hex of blocks in batch were accepted')
+        with open('./output/witness1', 'r') as witness:
+            lines = witness.readlines()
+            check = re.match('^~out_0 0$', lines[6])
+            self.assertIsNotNone(check, 'malicious version hex of blocks in batch were accepted')
 
     def test_3_malicious_prev_block(self):
         """
@@ -57,11 +61,13 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         test_helper.setup_validate_test_environment(BATCH_SIZE, BATCH_NO, verbose=self.verbose)
         
-        result = test_helper.exec_compute_witness(self.ctx, '{}malicious_prev_block.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO, verbose=self.verbose)
+        test_helper.exec_compute_witness(self.ctx, '{}malicious_prev_block.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO, verbose=self.verbose)
         
         # checking if output found error with help of regex
-        check = re.search('Execution failed', result.stdout.decode('utf-8'))
-        self.assertIsNotNone(check, 'malicious prevBlock was accepted')
+        with open('./output/witness1', 'r') as witness:
+            lines = witness.readlines()
+            check = re.match('^~out_0 0$', lines[6])
+            self.assertIsNotNone(check, 'malicious prevBlock was accepted')
 
     def test_5_epoch_block_non_sufficient_pow(self):
         """
@@ -70,11 +76,13 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         test_helper.setup_validate_test_environment(BATCH_SIZE, BATCH_NO, verbose=self.verbose)
 
-        result = test_helper.exec_compute_witness(self.ctx, '{}epoch_block_non_sufficient_pow.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO, verbose=self.verbose)
+        test_helper.exec_compute_witness(self.ctx, '{}epoch_block_non_sufficient_pow.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO, verbose=self.verbose)
         
         # checking if output found error with help of regex
-        check = re.search('Execution failed', result.stdout.decode('utf-8'))
-        self.assertIsNotNone(check, 'non sufficient pow of epoch block was accepted')
+        with open('./output/witness1', 'r') as witness:
+            lines = witness.readlines()
+            check = re.match('^~out_0 0$', lines[6])
+            self.assertIsNotNone(check, 'non sufficient pow of epoch block was accepted')
 
     def test_6_block_batch_non_sufficient_pow(self):
         """
@@ -83,11 +91,13 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         test_helper.setup_validate_test_environment(BATCH_SIZE, BATCH_NO, verbose=self.verbose)
 
-        result = test_helper.exec_compute_witness(self.ctx, '{}block_batch_non_sufficient_pow.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO, verbose=self.verbose)
+        test_helper.exec_compute_witness(self.ctx, '{}block_batch_non_sufficient_pow.json'.format(self.conf_dir_path), BATCH_SIZE, BATCH_NO, verbose=self.verbose)
         
         # checking if output found error with help of regex
-        check = re.search('Execution failed', result.stdout.decode('utf-8'))
-        self.assertIsNotNone(check, 'non sufficient pow of block batch was accepted')
+        with open('./output/witness1', 'r') as witness:
+            lines = witness.readlines()
+            check = re.match('^~out_0 0$', lines[6])
+            self.assertIsNotNone(check, 'non sufficient pow of block batch was accepted')
 
     def test_7_crossover_of_epochs(self):
         """
@@ -99,10 +109,12 @@ class TestMaliciousBlocks(unittest.TestCase):
         # check if required files are generated 
         test_helper.setup_validate_test_environment(batch_size, batch_no, verbose=self.verbose)
 
-        result = test_helper.exec_compute_witness(self.ctx, '{}crossover_of_epochs.json'.format(self.conf_dir_path), batch_size, batch_no, verbose=self.verbose)
+        test_helper.exec_compute_witness(self.ctx, '{}crossover_of_epochs.json'.format(self.conf_dir_path), batch_size, batch_no, verbose=self.verbose)
         
-        check = re.search('Execution failed', result.stdout.decode('utf-8'))
-        self.assertIsNotNone(check, '{} blocks at a crossover between epochs were processed.'.format(batch_size))
+        with open('./output/witness{}'.format(batch_no), 'r') as witness:
+            lines = witness.readlines()
+            check = re.match('^~out_0 0$', lines[6])
+            self.assertIsNotNone(check, '{} blocks at a crossover between epochs were processed.'.format(batch_size))
             
 
 if __name__ == "__main__":
