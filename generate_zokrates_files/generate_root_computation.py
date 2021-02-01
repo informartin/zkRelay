@@ -4,9 +4,9 @@ import math
 
 def generate_compute_root(number_leafs):
     if number_leafs > 2:
-        output = '\tu32[{len}][8] layer{layer} = [\n'.format(len=math.ceil(number_leafs/2), layer=(math.ceil(math.log(number_leafs,2))-1))
+        output = '\tbool[{len}][256] layer{layer} = [\n'.format(len=math.ceil(number_leafs/2), layer=(math.ceil(math.log(number_leafs,2))-1))
     else:
-        output = '\tu32[8] layer{layer} = '.format(layer=(math.ceil(math.log(number_leafs,2))-1))
+        output = '\tbool[256] layer{layer} = '.format(layer=(math.ceil(math.log(number_leafs,2))-1))
     for i in range(0, number_leafs-2, 2):
         output = output + '\t\tpedersenhash([...layer{layer}[{a}], ...layer{layer}[{b}]]),\n'.format(a=i, b=i+1, layer=math.ceil(math.log(number_leafs,2)))
     output = output + '\t\tpedersenhash([...layer{layer}[{a}], ...layer{layer}[{b}]])\n'.format(a=number_leafs-2 if number_leafs % 2 == 0 else number_leafs-1, b=number_leafs-1, layer=math.ceil(math.log(number_leafs,2)))
@@ -21,8 +21,8 @@ def generate_compute_root(number_leafs):
 
 def generate_root_code(number_leafs):
     output = ('import "hashes/pedersen/512bit.zok" as pedersenhash\n' +
-            'import "utils/pack/u32/pack128.zok" as u32_4_to_field\n' +
-        'def main(u32[{number_leafs}][8] layer{layer}) -> (field[2]):\n'.format(number_leafs=number_leafs,layer=math.ceil(math.log(number_leafs,2))) +
+            'import "utils/pack/bool/pack128.zok" as bool_128_to_field\n' +
+        'def main(bool[{number_leafs}][256] layer{layer}) -> (field[2]):\n'.format(number_leafs=number_leafs,layer=math.ceil(math.log(number_leafs,2))) +
         generate_compute_root(number_leafs) +
-        '\treturn [u32_4_to_field(layer0[0..4]), u32_4_to_field(layer0[4..8])]')
+        '\treturn [bool_128_to_field(layer0[0..128]), bool_128_to_field(layer0[128..256])]')
     return output

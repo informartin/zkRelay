@@ -1,13 +1,12 @@
 def generate_validation_code(n_blocks):
-    static_code = """import "EMBED/u32_to_bits" as u32_to_bits
+    static_code = """
+import "EMBED/u32_to_bits" as u32_to_bits
 import "EMBED/u32_from_bits" as u32_from_bits
-import "utils/casts/u32_4_to_bool_128.zok" as u32_4_to_bool_128
-import "utils/pack/u32/pack128.zok" as u32_4_to_field
 import "utils/pack/bool/pack128.zok" as pack_128_bool_to_field
 import "utils/pack/bool/unpack128.zok" as unpack_field_to_128_bool
 import "utils/pack/u32/unpack128.zok" as unpack_field_to_4_u32
-import "hashes/sha256/1024bit.zok" as sha256for1024
-import "hashes/sha256/256bitPadded.zok" as sha256only
+import "hashes/sha256/embed/1024bit.zok" as sha256for1024
+import "hashes/sha256/embed/256bitPadded.zok" as sha256only
 import "./getHexLength.zok" as getHexLength
 import "./compute_merkle_root.zok" as compute_merkle_root
 def toBigEndian(bool[32] value) -> (bool[32]):
@@ -134,23 +133,17 @@ def validate_target(field epoch_head, u32 epoch_tail, u32 next_epoch_head) -> (b
     delta = if target >= encoded_target_extended then delta else maxVariance + 1 fi
     bool valid = if delta <= maxVariance then true else false fi
 return valid, current_target
-def validate_block_header(u32 reference_target, u32[8] prev_block_hash, field[5] preimage_field) -> (u32[8]):
-   u32[20] preimage = [...unpack_field_to_4_u32(preimage_field[0]), ...unpack_field_to_4_u32(preimage_field[1]), ...unpack_field_to_4_u32(preimage_field[2]), ...unpack_field_to_4_u32(preimage_field[3]), ...unpack_field_to_4_u32(preimage_field[4])]
-	// preImage: [0] -> Block version, [1:8] -> prev_block_hash, [9:16] -> merkle root, [17:19] => time, target, nonce 
-    assert(preimage[1] == prev_block_hash[0] && \\
-            preimage[2] == prev_block_hash[1] && \\
-            preimage[3] == prev_block_hash[2] && \\
-            preimage[4] == prev_block_hash[3] && \\
-            preimage[5] == prev_block_hash[4] && \\
-            preimage[6] == prev_block_hash[5] && \\
-            preimage[7] == prev_block_hash[6] && \\
-            preimage[8] == prev_block_hash[7])
+def validate_block_header(u32 reference_target, bool[256] prev_block_hash, field[5] preimage_field) -> (bool[256]):
+    // preImage: [0-32] -> Block version, [32-288] -> prev_block_hash, [288:544] -> merkle root, [544:640] => time, target, nonce 
+    bool[640] preimage = [...unpack_field_to_128_bool(preimage_field[0]), ...unpack_field_to_128_bool(preimage_field[1]), ...unpack_field_to_128_bool(preimage_field[2]), ...unpack_field_to_128_bool(preimage_field[3]), ...unpack_field_to_128_bool(preimage_field[4])]
+    assert(pack_128_bool_to_field(preimage[32..160]) == pack_128_bool_to_field(prev_block_hash[0..128]) && \
+           pack_128_bool_to_field(preimage[160..288]) == pack_128_bool_to_field(prev_block_hash[128..256]))
     // converting to big endian is not necessary here, as reference target is encoded little endian
-    assert(preimage[18] == reference_target)
-    u32[8] intermediary = sha256for1024(preimage[0..8], preimage[8..16], [...preimage[16..20], 0x80000000, ...[0x00000000; 3]], [...[0x00000000; 7], 0x00000280])
-    u32[8] r = sha256only(intermediary)
-    field target = packTarget(toBigEndian(u32_to_bits(preimage[18])))
-    assert(target > pack_128_bool_to_field(toBigEndian(u32_4_to_bool_128(r[4..8]))))
+    assert(u32_from_bits(preimage[576..608]) == reference_target)
+    bool[256] intermediary = sha256for1024(preimage[0..256], preimage[256..512], [...preimage[512..640], true, ...[false; 127]], [...[false; 246], true, false, true, ...[false; 7]])
+    bool[256] r = sha256only(intermediary)
+    field target = packTarget(toBigEndian(preimage[576..608]))
+    assert(target > pack_128_bool_to_field(toBigEndian(r[128..256])))
 return r
 """
     main_block = []
@@ -158,9 +151,9 @@ return r
     main_block.append("def main(field epoch_head, field[2] prev_block_hash, private field[{n_intermediate}][5] intermediate_blocks, field[5] final_block_field) -> (bool, field[5]):".format(n_intermediate=(n_blocks-1)))
     main_block.append("""
     u32 reference_target = unpack_field_to_4_u32(epoch_head)[2]
-    u32[8] block_hash = [...unpack_field_to_4_u32(prev_block_hash[0]), ...unpack_field_to_4_u32(prev_block_hash[1])]
+    bool[256] block_hash = [...unpack_field_to_128_bool(prev_block_hash[0]), ...unpack_field_to_128_bool(prev_block_hash[1])]
     u32 final_block_target = unpack_field_to_4_u32(final_block_field[4])[2]
-    u32[{n_hashes}][8] blocks = [[0x00000000;8];{n_hashes}]
+    bool[{n_hashes}][256] blocks = [[false;256];{n_hashes}]
     for field i in 0..{n_intermediate} do
       block_hash = validate_block_header(reference_target, block_hash, intermediate_blocks[i])
       blocks[i] = block_hash
@@ -171,7 +164,7 @@ return r
     blocks[{n_intermediate}] = block_hash
     bool targetValid, field target = validate_target(epoch_head, unpack_field_to_4_u32(intermediate_blocks[0][4])[1], final_block_target)
     field[2] merkle_root = compute_merkle_root(blocks)
-    field[2] block = [u32_4_to_field(blocks[{n_intermediate}][0..4]), u32_4_to_field(blocks[{n_intermediate}][4..8])]
+    field[2] block = [pack_128_bool_to_field(blocks[{n_intermediate}][0..128]), pack_128_bool_to_field(blocks[{n_intermediate}][128..256])]
 return targetValid, [target, ...block, ...merkle_root]
     """.format(n_intermediate=(n_blocks - 1)))
     return static_code + "\n".join(main_block)
