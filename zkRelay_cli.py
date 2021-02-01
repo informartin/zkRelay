@@ -176,13 +176,14 @@ def create_merkle_proof(ctx, block_no, bc_host, bc_port, bc_user, bc_pwd):
 
     try:
         click.echo(colored('Exec "zokrates compute-witness --light"', 'cyan'))
-        command = ['zokrates', 'compute-witness', '--light', '-a']
+        command = ['/usr/bin/time', '-f', 'Max used memory during exec: %M kbytes']
+        command += ['zokrates', 'compute-witness', '--light', '-a']
         command += zokrates_input.split(' ')
         subprocess.run(command, check=True, cwd="mk_tree_validation/", stdout=verbose_output)
         click.echo(colored('Done!', 'green'))
 
         click.echo(colored('Exec "zokrates generate-proof"', 'cyan'))
-        subprocess.run(['zokrates', 'generate-proof'], stdout=verbose_output,
+        subprocess.run(['/usr/bin/time', '-f', 'Max used memory during exec: %M kbytes', 'zokrates', 'generate-proof'], stdout=verbose_output,
                         check=True, cwd="mk_tree_validation/")
         click.echo(colored('Done!', 'green'))
     except subprocess.CalledProcessError:
@@ -205,15 +206,15 @@ def setup(ctx):
 
     try:
         click.echo(colored('Exec "zokrates compile --light -i validate.zok"', 'cyan'))
-        subprocess.run(['zokrates', 'compile', '--light', '-i', 'validate.zok'], stdout=verbose_output,
+        subprocess.run(['/usr/bin/time', '-f', 'Max used memory during exec: %M kbytes', 'zokrates', 'compile', '--light', '-i', 'validate.zok'], stdout=verbose_output,
                         check=True)
         click.echo(colored('Done!', 'green'))
         click.echo(colored('Exec "zokrates setup --light"', 'cyan'))
-        subprocess.run(['zokrates', 'setup', '--light'], stdout=verbose_output,
+        subprocess.run(['/usr/bin/time', '-f', 'Max used memory during exec: %M kbytes', 'zokrates', 'setup', '--light'], stdout=verbose_output,
                         check=True)
         click.echo(colored('Done!', 'green'))
         click.echo(colored('Exec "zokrates export-verifier"', 'cyan'))
-        subprocess.run(['zokrates', 'export-verifier'], stdout=verbose_output,
+        subprocess.run(['/usr/bin/time', '-f', 'Max used memory during exec: %M kbytes', 'zokrates', 'export-verifier'], stdout=verbose_output,
                         check=True)
         click.echo(colored('Done!', 'green'))
     except subprocess.CalledProcessError:
@@ -227,15 +228,15 @@ def setup_merkle_proof(ctx):
 
     try:
         click.echo(colored('Exec "zokrates compile --light -i verify_merkle_proof.zok"', 'cyan'))
-        subprocess.run(['zokrates', 'compile', '--light', '-i', 'verify_merkle_proof.zok'], stdout=verbose_output,
+        subprocess.run(['/usr/bin/time', '-f', 'Max used memory during exec: %M kbytes', 'zokrates', 'compile', '--light', '-i', 'verify_merkle_proof.zok'], stdout=verbose_output,
                         check=True, cwd="mk_tree_validation/")
         click.echo(colored('Done!', 'green'))
         click.echo(colored('Exec "zokrates setup --light"', 'cyan'))
-        subprocess.run(['zokrates', 'setup', '--light'], stdout=verbose_output,
+        subprocess.run(['/usr/bin/time', '-f', 'Max used memory during exec: %M kbytes', 'zokrates', 'setup', '--light'], stdout=verbose_output,
                         check=True, cwd="mk_tree_validation/")
         click.echo(colored('Done!', 'green'))
         click.echo(colored('Exec "zokrates export-verifier"', 'cyan'))
-        subprocess.run(['zokrates', 'export-verifier'], stdout=verbose_output,
+        subprocess.run(['/usr/bin/time', '-f', 'Max used memory during exec: %M kbytes', 'zokrates', 'export-verifier'], stdout=verbose_output,
                         check=True, cwd="mk_tree_validation/")
         click.echo(colored('Done!', 'green'))
     except subprocess.CalledProcessError:
