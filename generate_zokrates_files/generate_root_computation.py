@@ -20,7 +20,7 @@ def generate_compute_root(number_leafs):
 
 
 def generate_root_code(number_leafs):
-    output = ('import "hashes/pedersen/512bit.zok" as pedersenhash\n' +
+    output = ('import "hashes/pedersen/512bitBool.zok" as pedersenhash\n' +
             'import "utils/pack/bool/pack128.zok" as bool_128_to_field\n' +
         'def main(bool[{number_leafs}][256] layer{layer}) -> (field[2]):\n'.format(number_leafs=number_leafs,layer=math.ceil(math.log(number_leafs,2))) +
         generate_compute_root(number_leafs) +
