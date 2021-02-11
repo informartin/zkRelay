@@ -6,7 +6,7 @@ The detailed concept of zkRelay can be found in the respective research paper pu
 
 The implementation is based on [ZoKrates](https://github.com/Zokrates/ZoKrates) and performs off-chain Bitcoin header chain validations, while only the resulting proof is submitted to the target ledger.
 
-The workflow of zkRelay is seperated into three steps, ZoKrates code generation, a one-time compilation and setup step and many-time validation.
+The workflow of zkRelay is separated into three steps, ZoKrates code generation, a one-time compilation and setup step and many-time validation.
 
 As a prerequisite, [ZoKrates](https://github.com/Zokrates/ZoKrates) needs to be installed in version 0.5.1 for both steps.
 
@@ -44,7 +44,7 @@ $ zkRelay generate-files n
 
 ## Compilation and Setup
 
-In this step, the off-chain program is compiled, the setup for generatung proving and verification keys are executed and the smart contract verifier is generated. zkRelay integrates these three tasks in a single execution step, the setup:
+In this step, the off-chain program is compiled, the setup for generating proving and verification keys are executed and the smart contract verifier is generated. zkRelay integrates these three tasks in a single execution step, the setup:
 ``` bash
 $ zkRelay setup
 ```
