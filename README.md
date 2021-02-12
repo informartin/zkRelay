@@ -84,7 +84,7 @@ $ zokrates print-proof --format [remix, json]
 
 ## Create inclusion proofs for intermediary blocks
 
-zkRelay provides a mechanism for adding intermediary blocks of previously submitted batches to the relay contract. For this purpose, a Merkle tree is generated during the off-chain block validation. The resulting Merkle root is stored within the contract. To submit an intermediary block to the contract, the Merkle root is generated within a ZoKrates program. The correctness of the off-chain execution is again validated by the relay contract. Only if the execution was correct and the computed Merkle root is equivalent with the Merkle root stored for a given batch, the submitted block header is stored. Thereafter, it can be used for securely derive SPVs and so forth.
+zkRelay provides a mechanism for adding intermediary blocks of previously submitted batches to the relay contract. For this purpose, a Merkle tree is generated during the off-chain block validation. The resulting Merkle root is stored within the contract. To submit an intermediary block to the contract, the Merkle root is generated within a ZoKrates program. The correctness of the off-chain execution is again validated by the relay contract. Only if the execution was correct and the computed Merkle root is equivalent with the Merkle root stored for a given batch, the submitted block header is stored. Thereafter, it can be used for securely deriving SPVs and so forth.
 
 As the inclusion proof is conducted within a ZoKrates program, a setup is required before off-chain execusions are possible. The process is similar to the setup of the off-chain block validation program described previously.
 
