@@ -44,7 +44,7 @@ $ zkRelay generate-files n
 
 ## Compilation and Setup
 
-In this step, the off-chain program is compiled, the setup for generating proving and verification keys are executed and the smart contract verifier is generated. zkRelay integrates these three tasks in a single execution step, the setup:
+In this step, the off-chain program is compiled, the setup for generating proving and verification keys is executed and the smart contract verifier is generated. zkRelay integrates these three tasks in a single execution step, the setup:
 ``` bash
 $ zkRelay setup
 ```
@@ -86,7 +86,7 @@ $ zokrates print-proof --format [remix, json]
 
 zkRelay provides a mechanism for adding intermediary blocks of previously submitted batches to the relay contract. For this purpose, a Merkle tree is generated during the off-chain block validation. The resulting Merkle root is stored within the contract. To submit an intermediary block to the contract, the Merkle root is generated within a ZoKrates program. The correctness of the off-chain execution is again validated by the relay contract. Only if the execution was correct and the computed Merkle root is equivalent with the Merkle root stored for a given batch, the submitted block header is stored. Thereafter, it can be used for securely to derive SPVs and so forth.
 
-As the inclusion proof is conducted within a ZoKrates program, a setup is required before off-chain execusions are possible. The process is similar to the setup of the off-chain block validation program described previously.
+As the inclusion proof is conducted within a ZoKrates program, a setup is required before off-chain executions are possible. The process is similar to the setup of the off-chain block validation program described previously.
 
 ### Setup
 
