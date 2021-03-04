@@ -3,21 +3,9 @@ import math
 
 def generate_create_hash():
     return '''
-def create_hash(field[5] preimage) -> (field[256]):
-	a = unpack128(preimage[0])
-	b = unpack128(preimage[1])
-	c = unpack128(preimage[2])
-	d = unpack128(preimage[3])
-	e = unpack128(preimage[4])
-
-	field[256] preimage1 = [...a, ...b]
-    field[256] preimage2 = [...c, ...d]
-    field[256] preimage3 = [...[...e, 1], ...[0; 127]]
-    field[256] dummy = [...[0; 246], ...[1, 0, 1, 0, 0, 0, 0, 0, 0, 0]] //second array indicates length of preimage = 640bit
-
-    intermediary = sha256for1024(preimage1, preimage2, preimage3, dummy)
-    
-	return sha256only(intermediary)
+def create_hash(bool[640] preimage) -> (bool[256]):
+	bool[256] intermediary = sha256for1024(preimage[0..256], preimage[256..512], [...preimage[512..640], true, ...[false; 127]], [...[false; 246], true, false, true, ...[false; 7]])
+    return sha256only(intermediary)
 
     '''
 
@@ -25,26 +13,24 @@ def create_hash(field[5] preimage) -> (field[256]):
 def generate_merkle_proof_validation_code(number_leafs):
     layers = math.ceil(math.log(number_leafs, 2))
     code = []
-
     code.append('import "hashes/pedersen/512bit.zok" as pedersenhash')
-    code.append('import "utils/pack/pack128.zok" as pack128\n')
-    code.append('import "utils/pack/unpack128.zok" as unpack128\n')
-    code.append('import "hashes/sha256/1024bit.zok" as sha256for1024\n')
-    code.append('import "../sha256only.zok" as sha256only')
+    code.append('import "hashes/sha256/embed/1024bit.zok" as sha256for1024\n')
+    code.append('import "hashes/sha256/embed/256bitPadded.zok" as sha256only\n')
+    code.append('import "utils/pack/bool/pack128.zok" as pack_128_bool_to_field\n')
+    code.append('import "utils/pack/u32/pack128.zok" as pack_u32_4_to_field\n')
+    code.append('import "utils/pack/bool/unpack128.zok" as unpack_field_to_128_bool\n')
+    code.append('import "utils/casts/bool_128_to_u32_4.zok" as bool_128_to_u32_4\n')
+
 
     code.append(generate_create_hash())
-
-    code.append('def main(field[5] preimage, private field[{layers}][256] path, private field[{layers}] lr) -> (field[4]):'.format(layers=layers))
-    code.append('\tunpacked_proof_header = create_hash(preimage)')
-    code.append('\tfield[256] layer0 = if lr[0] == 0 then pedersenhash([...path[0], ...unpacked_proof_header]) else pedersenhash([...unpacked_proof_header, ...path[0]]) fi')
+    code.append('def main(field[5] preimage_field, private u32[{layers}][8] path, private field[{layers}] lr) -> (field[2][2]):'.format(layers=layers))
+    code.append('\tbool[640] preimage = [...unpack_field_to_128_bool(preimage_field[0]), ...unpack_field_to_128_bool(preimage_field[1]), ...unpack_field_to_128_bool(preimage_field[2]), ...unpack_field_to_128_bool(preimage_field[3]), ...unpack_field_to_128_bool(preimage_field[4])]')
+    code.append('\tbool[256] proof_header = create_hash(preimage)')
+    code.append('\tu32[8] layer0 = if lr[0] == 0 then pedersenhash([...path[0], ...bool_128_to_u32_4(proof_header[0..128]), ...bool_128_to_u32_4(proof_header[128..256])]) else pedersenhash([...bool_128_to_u32_4(proof_header[0..128]), ...bool_128_to_u32_4(proof_header[128..256]), ...path[0]]) fi')
 
     for i in range(1, layers):
-        code.append('\tfield[256] layer{i} = if lr[{i}] == 0 then pedersenhash([...path[{i}], ...layer{preceeding}]) else pedersenhash([...layer{preceeding}, ...path[{i}]]) fi'.format(i=i, preceeding= i-1))
+        code.append('\tu32[8] layer{i} = if lr[{i}] == 0 then pedersenhash([...path[{i}], ...layer{preceeding}]) else pedersenhash([...layer{preceeding}, ...path[{i}]]) fi'.format(i=i, preceeding= i-1))
 
-    code.append('\tres0 = pack128(layer{layers}[0..128])'.format(layers=layers-1))
-    code.append('\tres1 = pack128(layer{layers}[128..256])'.format(layers=layers-1))
-
-    code.append('\tfield[2] proof_header = [pack128(unpacked_proof_header[0..128]), pack128(unpacked_proof_header[128..256])]')
-    code.append('\treturn [...proof_header, res0, res1]')
+    code.append('\treturn [[pack_128_bool_to_field(proof_header[0..128]), pack_128_bool_to_field(proof_header[128..256])], [pack_u32_4_to_field(layer{layers}[0..4]), pack_u32_4_to_field(layer{layers}[4..8])]]'.format(layers=layers-1))
 
     return '\n'.join(code)

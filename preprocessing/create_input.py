@@ -1,5 +1,6 @@
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 from bitstring import BitArray
+import json
 
 GENESIS_BLOCK_HASH = '000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f'
 
@@ -38,6 +39,8 @@ def getBlocksInRange(ctx, i, j):
     blocks = rpc_connection.batch_([["getblock", h] for h in block_hashes])
     return blocks
 
+def hexToEightByteHexArray(input):
+   return ["0x" + input[i:i+8] for i in range(0,len(input), 8)]
 
 def hexToDecimalZokratesInput(input):
     preimage = bytes.fromhex(input)
@@ -49,7 +52,6 @@ def hexToBinaryZokratesInput(input):
     preimage = bytes.fromhex(input)
     bitarray = BitArray(bytes=preimage)
     return " ".join(bitarray.bin)
-
 
 def createZokratesInputFromBlock(block):
     version = littleEndian(block['versionHex'])
@@ -63,7 +65,6 @@ def createZokratesInputFromBlock(block):
 
     header = version + little_endian_previousHash + little_endian_merkleRoot + little_endian_time + little_endian_difficultyBits + little_endian_nonce
     return header
-
 
 def generateZokratesInputFromBlock(ctx, first_block, amount):
     last_block = first_block + amount

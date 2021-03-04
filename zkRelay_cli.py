@@ -134,9 +134,11 @@ def create_merkle_proof(ctx, block_no, bc_host, bc_port, bc_user, bc_pwd):
     tree = preprocessing.compute_full_merkle_tree(block_hashes)
     header = preprocessing.createZokratesInputFromBlock(preprocessing.getBlocksInRange(ctx, block_no, block_no+1)[0])
     zokrates_input = preprocessing.get_proof_input(tree, target_header_hash, header)
+    cmd_echo = 'echo '
+    cmd_compute_witness = '| zokrates compute-witness --light --abi --stdin'
     try:
         click.echo(colored('Exec "zokrates compute-witness --light"', 'cyan'))
-        subprocess.run('zokrates compute-witness --light -a ' + zokrates_input,
+        subprocess.run(cmd_echo + zokrates_input + cmd_compute_witness,
                         check=True, shell=True, cwd="mk_tree_validation/")
         click.echo(colored('Done!', 'green'))
         click.echo(colored('Exec "zokrates generate-proof"', 'cyan'))

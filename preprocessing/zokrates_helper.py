@@ -9,7 +9,8 @@ cmd_generate_proof = 'zokrates generate-proof'
 
 #TODO change BlockNo to BatchNr
 def validateBatchFromBlockNo(ctx, blockNo, batch_size):
-    result = generateZokratesInputFromBlock(ctx, (blockNo-1)*batch_size+1, batch_size)
+    # result = generateZokratesInputFromBlock(ctx, (blockNo-1)*batch_size+1, batch_size)
+    result = generateZokratesInputFromBlock(ctx, blockNo, batch_size)
     os.system(cmd_compute_witness + result)
     os.system(cmd_generate_proof)
     os.system('mv witness output/witness' + str(blockNo))
