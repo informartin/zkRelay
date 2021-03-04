@@ -49,7 +49,7 @@ In this step, the off-chain program is compiled, the setup for generating provin
 $ zkRelay setup
 ```
   
-The resulting zkRelay contract `batch_verifier.sol` has to be deployed using a tool of your choice. It references the generated verification contract `verifier.sol` which has to be available during deployment.
+The resulting zkRelay contract `batch_verifier.sol` has to be deployed using a tool of your choice. It references the generated verification contract `verifier.sol` which has to be available during deployment. Furthermore, the [intermediary proof setup](create-inclusion-proofs-for-intermediary-blocks) has to be executed, before the contracts can be deployed, as they are refereced within the batch verifier. 
 
 ## Off-chain validation
 
