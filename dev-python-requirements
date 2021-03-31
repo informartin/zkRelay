@@ -1,4 +1,5 @@
 --index-url https://pypi.python.org/simple/
 
+pytest_httpserver == 0.3.5
 -e git+https://github.com/Zokrates/pycrypto.git#egg=zokrates_pycrypto
 -e .

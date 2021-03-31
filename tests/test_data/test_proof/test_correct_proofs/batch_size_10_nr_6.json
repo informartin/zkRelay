@@ -1,0 +1,79 @@
+{
+    "http_requests": [
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [1], "id": 1}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [2], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [3], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [4], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [5], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [6], "id": 1}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [7], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [8], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [9], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [10], "id": 2}],
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [7], "id": 3}],
+        [{"jsonrpc": "2.0", "method": "getblock", "params": ["0000000071966c2b1d065fd446b1e485b2c9d9594acd2007ccbd5441cfc89444"], "id": 4}]
+    ],
+    "http_responses": [[
+        {
+            "error": null,
+            "result": "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048"
+        },
+        {
+            "error": null,
+            "result": "000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd"
+        },
+        {
+            "error": null,
+            "result": "0000000082b5015589a3fdf2d4baff403e6f0be035a5d9742c1cae6295464449"
+        },
+        {
+            "error": null,
+            "result": "000000004ebadb55ee9096c9a2f8880e09da59c0d68b1c228da88e48844a1485"
+        },
+        {
+            "error": null,
+            "result": "000000009b7262315dbf071787ad3656097b892abffd1f95a1a022f896f533fc"
+        },
+        {
+            "error": null,
+            "result": "000000003031a0e73735690c5a1ff2a4be82553b2a12b776fbd3a215dc8f778d"
+        },
+        {
+            "error": null,
+            "result": "0000000071966c2b1d065fd446b1e485b2c9d9594acd2007ccbd5441cfc89444"
+        },
+        {
+            "error": null,
+            "result": "00000000408c48f847aa786c2268fc3e6ec2af68e8468a34a28c61b7f1de0dc6"
+        },
+        {
+            "error": null,
+            "result": "000000008d9dc510f23c2657fc4f67bea30078cc05a90eb89e84cc475c080805"
+        },
+        {
+            "error": null,
+            "result": "000000002c05cc2e78923c34df87fd108b22221ac6076c18f3ade378a4d915e9"
+        }
+    ], [
+        {
+            "error": null,
+            "result": "0000000071966c2b1d065fd446b1e485b2c9d9594acd2007ccbd5441cfc89444"
+        }
+    ], [
+        {
+            "error": null,
+            "result": {
+                "bits": "1d00ffff",
+                "chainwork": "0000000000000000000000000000000000000000000000000000000800080008",
+                "confirmations": 653146,
+                "difficulty": 1.0,
+                "hash": "0000000071966c2b1d065fd446b1e485b2c9d9594acd2007ccbd5441cfc89444",
+                "height": 7,
+                "mediantime": 1231470988,
+                "merkleroot": "8aa673bc752f2851fd645d6a0a92917e967083007d9c1684f9423b100540673f",
+                "nTx": 1,
+                "nextblockhash": "00000000408c48f847aa786c2268fc3e6ec2af68e8468a34a28c61b7f1de0dc6",
+                "nonce": 2258412857,
+                "previousblockhash": "000000003031a0e73735690c5a1ff2a4be82553b2a12b776fbd3a215dc8f778d",
+                "size": 215,
+                "strippedsize": 215,
+                "time": 1231472369,
+                "tx": [],
+                "version": 1,
+                "versionHex": "00000001",
+                "weight": 860
+            }
+        }
+    ]]  
+}

@@ -1,0 +1,55 @@
+{
+    "http_requests": [
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [1], "id": 1}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [2], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [3], "id": 2}, {"jsonrpc": "2.0", "method": "getblockhash", "params": [4], "id": 2}],
+        [{"jsonrpc": "2.0", "method": "getblockhash", "params": [3], "id": 3}],
+        [{"jsonrpc": "2.0", "method": "getblock", "params": ["00000000000000000019f112ec0a9982926f1258cdcc558dd7c3b7e5dc7fa148"], "id": 4}]
+    ],
+    "http_responses": [[
+        {
+            "error": null,
+            "result": "000000000000000000eb9bc1f9557dc9e2cfe576f57a52f6be94720b338029e4"
+        },
+        {
+            "error": null,
+            "result": "0000000000000000011865af4122fe3b144e2cbeea86142e8ff2fb4107352d43"
+        },
+        {
+            "error": null,
+            "result": "00000000000000000019f112ec0a9982926f1258cdcc558dd7c3b7e5dc7fa148"
+        },
+        {
+            "error": null,
+            "result": "000000000000000000e512213f7303f72c5f7446e6e295f73c28cb024dd79e34"
+        }
+    ], [
+        {
+            "error": null,
+            "result": "00000000000000000019f112ec0a9982926f1258cdcc558dd7c3b7e5dc7fa148"
+        }
+    ], [
+        {
+            "error": null,
+            "result": {
+                "bits": "18014735",
+                "chainwork": "00000000000000000000000000000000000000000074489ee978b0489ded1f20",
+                "confirmations": 178533,
+                "difficulty": 860221984436.2223,
+                "hash": "00000000000000000019f112ec0a9982926f1258cdcc558dd7c3b7e5dc7fa148",
+                "height": 478559,
+                "mediantime": 1501592847,
+                "merkleroot": "5fa62e1865455037450b7275d838d04f00230556129a4e86621a6bc4ad318c18",
+                "nTx": 472,
+                "nextblockhash": "000000000000000000e512213f7303f72c5f7446e6e295f73c28cb024dd79e34",
+                "nonce": 3079519674,
+                "previousblockhash": "0000000000000000011865af4122fe3b144e2cbeea86142e8ff2fb4107352d43",
+                "size": 272502,
+                "strippedsize": 272502,
+                "time": 1501593780,
+                "tx": [],
+                "version": 536870914,
+                "versionHex": "20000002",
+                "weight": 1090008
+            }
+        }
+    ]]  
+}

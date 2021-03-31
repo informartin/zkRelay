@@ -14,7 +14,6 @@ setup(
         'toml',
         'colorama',
         'termcolor',
-        'pytest_httpserver',
         'zokrates_pycrypto'
     ],
     entry_points='''
